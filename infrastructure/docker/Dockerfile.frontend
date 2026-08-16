@@ -1,0 +1,35 @@
+# docker/Dockerfile.frontend
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+# Copy monorepo config
+COPY package*.json tsconfig.json ./
+COPY apps/web-app/package*.json ./apps/web-app/
+
+# Install dependencies
+RUN npm ci
+
+# Copy source files
+COPY apps/web-app ./apps/web-app
+
+# Build Next.js app
+RUN npm run build --workspace=apps/web-app
+
+# --- Production Runner ---
+FROM node:20-alpine AS runner
+
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
+
+# Copy built app
+COPY --from=builder /app/apps/web-app/public ./apps/web-app/public
+COPY --from=builder /app/apps/web-app/.next/standalone ./
+COPY --from=builder /app/apps/web-app/.next/static ./apps/web-app/.next/static
+
+EXPOSE 3000
+
+CMD ["node", "apps/web-app/server.js"]

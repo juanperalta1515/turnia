@@ -1,0 +1,392 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ==========================================
+// 1. PLATAFORMA (SUPER ADMIN & SAAS GLOBAL)
+// ==========================================
+
+model Plan {
+  id          String        @id @default(uuid()) @db.Uuid
+  code        String        @unique @db.VarChar(50) // 'ESENCIAL', 'PRO'
+  name        Json          // {"es-ES": "Esencial", "es-AR": "Esencial"}
+  description Json?
+  features    PlanFeature[]
+  subscriptions Subscription[]
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+
+  @@map("plans")
+}
+
+model PlanFeature {
+  id          String   @id @default(uuid()) @db.Uuid
+  planId      String   @map("plan_id") @db.Uuid
+  plan        Plan     @relation(fields: [planId], references: [id], onDelete: Cascade)
+  featureCode String   @map("feature_code") @db.VarChar(50) // 'WHATSAPP', 'CALENDAR_SYNC'
+  limitValue  Int?     @map("limit_value") // null is unlimited
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("plan_features")
+}
+
+model Tenant {
+  id           String        @id @default(uuid()) @db.Uuid
+  name         String        @db.VarChar(255)
+  subdomain    String?       @unique @db.VarChar(100)
+  market       String        @db.VarChar(2) // 'ES', 'AR'
+  currency     String        @db.VarChar(3) // 'EUR', 'ARS'
+  status       String        @default("ACTIVE") @db.VarChar(50) // 'ACTIVE', 'SUSPENDED'
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+  
+  business     Business?
+  users        User[]
+  subscriptions Subscription[]
+  professionals Professional[]
+  services     Service[]
+  categories   ServiceCategory[]
+  schedules    ProfessionalSchedule[]
+  timeOffs     ProfessionalTimeOff[]
+  customers    Customer[]
+  bookings     Booking[]
+  conversations WhatsappConversation[]
+  calendarAccounts CalendarAccount[]
+  auditLogs    AuditLog[]
+
+  @@map("tenants")
+}
+
+model Subscription {
+  id                 String   @id @default(uuid()) @db.Uuid
+  tenantId           String   @map("tenant_id") @db.Uuid
+  tenant             Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  planId             String   @map("plan_id") @db.Uuid
+  plan               Plan     @relation(fields: [planId], references: [id])
+  status             String   @db.VarChar(50) // 'ACTIVE', 'PAST_DUE'
+  currentPeriodStart DateTime @map("current_period_start")
+  currentPeriodEnd   DateTime @map("current_period_end")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  @@map("subscriptions")
+}
+
+// ==========================================
+// 2. USUARIOS & AUTENTICACIÓN (RBAC)
+// ==========================================
+
+model User {
+  id            String   @id @default(uuid()) @db.Uuid
+  tenantId      String?  @map("tenant_id") @db.Uuid
+  tenant        Tenant?  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  email         String   @unique @db.VarChar(255)
+  passwordHash  String   @map("password_hash") @db.VarChar(255)
+  firstName     String?  @map("first_name") @db.VarChar(100)
+  lastName      String?  @map("last_name") @db.VarChar(100)
+  role          String   @db.VarChar(50) // 'SUPER_ADMIN', 'TENANT_OWNER', 'TENANT_ADMIN', 'STAFF', 'CUSTOMER'
+  isActive      Boolean  @default(true) @map("is_active")
+  emailVerified Boolean  @default(false) @map("email_verified")
+  mfaEnabled    Boolean  @default(false) @map("mfa_enabled")
+  mfaSecret     String?  @map("mfa_secret") @db.VarChar(255)
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+  
+  professionals Professional[]
+  auditLogs     AuditLog[]
+
+  @@index([tenantId, email])
+  @@map("users")
+}
+
+// ==========================================
+// 3. NEGOCIO & CONFIGURACIÓN
+// ==========================================
+
+model Business {
+  id                String         @id @default(uuid()) @db.Uuid
+  tenantId          String         @unique @map("tenant_id") @db.Uuid
+  tenant            Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  name              String         @db.VarChar(255)
+  phoneNumber       String?        @map("phone_number") @db.VarChar(50)
+  timezone          String         @default("Europe/Madrid") @db.VarChar(100)
+  locale            String         @default("es-ES") @db.VarChar(10)
+  taxIdentifier     String?        @map("tax_identifier") @db.VarChar(50) // NIF/CIF (ES), CUIT (AR)
+  automationEnabled Boolean        @default(true) @map("automation_enabled")
+  createdAt         DateTime       @default(now()) @map("created_at")
+  updatedAt         DateTime       @updatedAt @map("updated_at")
+  hours             BusinessHour[]
+
+  @@map("businesses")
+}
+
+model BusinessHour {
+  id         String   @id @default(uuid()) @db.Uuid
+  tenantId   String   @map("tenant_id") @db.Uuid
+  businessId String   @map("business_id") @db.Uuid
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  dayOfWeek  Int      @map("day_of_week") // 0-6 (Sunday-Saturday)
+  openTime   String   @map("open_time") @db.VarChar(5) // "HH:MM"
+  closeTime  String   @map("close_time") @db.VarChar(5) // "HH:MM"
+  isClosed   Boolean  @default(false) @map("is_closed")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@map("business_hours")
+}
+
+// ==========================================
+// 4. PROFESIONALES Y SERVICIOS
+// ==========================================
+
+model Professional {
+  id        String    @id @default(uuid()) @db.Uuid
+  tenantId  String    @map("tenant_id") @db.Uuid
+  tenant    Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  userId    String?   @map("user_id") @db.Uuid
+  user      User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  name      String    @db.VarChar(255)
+  email     String?   @db.VarChar(255)
+  phone     String?   @db.VarChar(50)
+  avatarUrl String?   @map("avatar_url") @db.VarChar(512)
+  isActive  Boolean   @default(true) @map("is_active")
+  deletedAt DateTime? @map("deleted_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  services  ProfessionalService[]
+  schedules ProfessionalSchedule[]
+  timeOffs  ProfessionalTimeOff[]
+  bookingItems BookingItem[]
+
+  @@map("professionals")
+}
+
+model ServiceCategory {
+  id           String    @id @default(uuid()) @db.Uuid
+  tenantId     String    @map("tenant_id") @db.Uuid
+  tenant       Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  name         String    @db.VarChar(100)
+  displayOrder Int       @default(0) @map("display_order")
+  services     Service[]
+
+  @@map("service_categories")
+}
+
+model Service {
+  id               String           @id @default(uuid()) @db.Uuid
+  tenantId         String           @map("tenant_id") @db.Uuid
+  tenant           Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  categoryId       String?          @map("category_id") @db.Uuid
+  category         ServiceCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  name             String           @db.VarChar(255)
+  description      String?          @db.Text
+  durationMinutes  Int              @map("duration_minutes")
+  priceAmount      Decimal          @map("price_amount") @db.Decimal(12, 2)
+  priceCurrency    String           @map("price_currency") @db.VarChar(3)
+  isActive         Boolean          @default(true) @map("is_active")
+  deletedAt        DateTime?        @map("deleted_at")
+  createdAt        DateTime         @default(now()) @map("created_at")
+
+  professionals    ProfessionalService[]
+  bookingItems     BookingItem[]
+
+  @@map("services")
+}
+
+model ProfessionalService {
+  professionalId String       @map("professional_id") @db.Uuid
+  professional   Professional @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  serviceId      String       @map("service_id") @db.Uuid
+  service        Service      @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@id([professionalId, serviceId])
+  @@map("professional_services")
+}
+
+model ProfessionalSchedule {
+  id             String       @id @default(uuid()) @db.Uuid
+  tenantId       String       @map("tenant_id") @db.Uuid
+  tenant         Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  professionalId String       @map("professional_id") @db.Uuid
+  professional   Professional @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  dayOfWeek      Int          @map("day_of_week") // 0-6
+  startTime      String       @map("start_time") @db.VarChar(5) // "HH:MM"
+  endTime        String       @map("end_time") @db.VarChar(5) // "HH:MM"
+  isActive       Boolean      @default(true) @map("is_active")
+
+  @@map("professional_schedules")
+}
+
+model ProfessionalTimeOff {
+  id             String       @id @default(uuid()) @db.Uuid
+  tenantId       String       @map("tenant_id") @db.Uuid
+  tenant         Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  professionalId String       @map("professional_id") @db.Uuid
+  professional   Professional @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  startTime      DateTime     @map("start_time")
+  endTime        DateTime     @map("end_time")
+  reason         String?      @db.VarChar(255)
+
+  @@map("professional_time_off")
+}
+
+// ==========================================
+// 5. CLIENTES Y RESERVAS
+// ==========================================
+
+model Customer {
+  id        String    @id @default(uuid()) @db.Uuid
+  tenantId  String    @map("tenant_id") @db.Uuid
+  tenant    Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  firstName String    @map("first_name") @db.VarChar(100)
+  lastName  String?   @map("last_name") @db.VarChar(100)
+  email     String?   @db.VarChar(255)
+  phone     String    @db.VarChar(50)
+  notes     String?   @db.Text
+  deletedAt DateTime? @map("deleted_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  
+  bookings  Booking[]
+
+  @@index([tenantId, phone])
+  @@map("customers")
+}
+
+model Booking {
+  id                 String                @id @default(uuid()) @db.Uuid
+  tenantId           String                @map("tenant_id") @db.Uuid
+  tenant             Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  customerId         String                @map("customer_id") @db.Uuid
+  customer           Customer              @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  status             String                @default("PENDING") @db.VarChar(50) // 'PENDING', 'CONFIRMED', 'CANCELLED', 'NOSHOW'
+  source             String                @db.VarChar(50) // 'WHATSAPP', 'WEB', 'MANUAL'
+  totalPriceAmount   Decimal               @map("total_price_amount") @db.Decimal(12, 2)
+  totalPriceCurrency String                @map("total_price_currency") @db.VarChar(3)
+  startTime          DateTime              @map("start_time")
+  endTime            DateTime              @map("end_time")
+  deletedAt          DateTime?             @map("deleted_at")
+  createdAt          DateTime              @default(now()) @map("created_at")
+  updatedAt          DateTime              @updatedAt @map("updated_at")
+
+  items              BookingItem[]
+  statusHistory      BookingStatusHistory[]
+  calendarEvents     CalendarEvent[]
+
+  @@map("bookings")
+}
+
+model BookingItem {
+  id             String       @id @default(uuid()) @db.Uuid
+  bookingId      String       @map("booking_id") @db.Uuid
+  booking        Booking      @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  serviceId      String       @map("service_id") @db.Uuid
+  service        Service      @relation(fields: [serviceId], references: [id], onDelete: Restrict)
+  professionalId String       @map("professional_id") @db.Uuid
+  professional   Professional @relation(fields: [professionalId], references: [id], onDelete: Restrict)
+  priceAmount    Decimal      @map("price_amount") @db.Decimal(12, 2)
+  priceCurrency  String       @map("price_currency") @db.VarChar(3)
+  startTime      DateTime     @map("start_time")
+  endTime        DateTime     @map("end_time")
+
+  @@map("booking_items")
+}
+
+model BookingStatusHistory {
+  id        String   @id @default(uuid()) @db.Uuid
+  bookingId String   @map("booking_id") @db.Uuid
+  booking   Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  status    String   @db.VarChar(50)
+  changedBy String?  @map("changed_by") @db.VarChar(255)
+  reason    String?  @db.VarChar(255)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("booking_status_history")
+}
+
+// ==========================================
+// 6. WHATSAPP & AUTOMATIZACIÓN
+// ==========================================
+
+model WhatsappConversation {
+  id               String            @id @default(uuid()) @db.Uuid
+  tenantId         String            @map("tenant_id") @db.Uuid
+  tenant           Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  customerPhone    String            @map("customer_phone") @db.VarChar(50)
+  automationPaused Boolean           @default(false) @map("automation_paused")
+  pausedUntil      DateTime?         @map("paused_until")
+  lastMessageAt    DateTime?         @map("last_message_at")
+  createdAt        DateTime          @default(now()) @map("created_at")
+  messages         WhatsappMessage[]
+
+  @@map("whatsapp_conversations")
+}
+
+model WhatsappMessage {
+  id             String               @id @default(uuid()) @db.Uuid
+  conversationId String               @map("conversation_id") @db.Uuid
+  conversation   WhatsappConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  direction      String               @db.VarChar(10) // 'INBOUND', 'OUTBOUND'
+  messageSid     String?              @map("message_sid") @db.VarChar(255)
+  body           String               @db.Text
+  status         String               @default("SENT") @db.VarChar(50)
+  createdAt      DateTime             @default(now()) @map("created_at")
+
+  @@map("whatsapp_messages")
+}
+
+// ==========================================
+// 7. GOOGLE CALENDAR
+// ==========================================
+
+model CalendarAccount {
+  id             String          @id @default(uuid()) @db.Uuid
+  tenantId       String          @map("tenant_id") @db.Uuid
+  tenant         Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  provider       String          @db.VarChar(50) // 'GOOGLE'
+  accessToken    String          @map("access_token") @db.Text
+  refreshToken   String          @map("refresh_token") @db.Text
+  tokenExpiresAt DateTime        @map("token_expires_at")
+  email          String          @db.VarChar(255)
+  createdAt      DateTime        @default(now()) @map("created_at")
+  calendarEvents CalendarEvent[]
+
+  @@map("calendar_accounts")
+}
+
+model CalendarEvent {
+  id                String          @id @default(uuid()) @db.Uuid
+  bookingId         String          @map("booking_id") @db.Uuid
+  booking           Booking         @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  calendarAccountId String          @map("calendar_account_id") @db.Uuid
+  calendarAccount   CalendarAccount @relation(fields: [calendarAccountId], references: [id], onDelete: Cascade)
+  externalEventId   String          @map("external_event_id") @db.VarChar(255)
+  syncedAt          DateTime        @default(now()) @map("synced_at")
+
+  @@map("calendar_events")
+}
+
+// ==========================================
+// 8. AUDITORÍA
+// ==========================================
+
+model AuditLog {
+  id        String   @id @default(uuid()) @db.Uuid
+  tenantId  String?  @map("tenant_id") @db.Uuid
+  tenant    Tenant?  @relation(fields: [tenantId], references: [id], onDelete: SetNull)
+  userId    String?  @map("user_id") @db.Uuid
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action    String   @db.VarChar(255) // 'CREATE_BOOKING'
+  entity    String   @db.VarChar(100)
+  entityId  String   @map("entity_id") @db.Uuid
+  ipAddress String?  @map("ip_address") @db.VarChar(45)
+  userAgent String?  @map("user_agent") @db.Text
+  payload   Json?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([tenantId, createdAt(sort: Desc)])
+  @@map("audit_logs")
+}

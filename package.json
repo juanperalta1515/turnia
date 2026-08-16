@@ -1,0 +1,24 @@
+{
+  "name": "turnia-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "SaaS Platform for Automated Bookings via WhatsApp & Google Calendar",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspaces --if-present",
+    "build": "npm run build --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "db:migrate": "npm run db:migrate --workspace=packages/db",
+    "db:generate": "npm run db:generate --workspace=packages/db",
+    "db:seed": "npm run db:seed --workspace=packages/db"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3",
+    "prettier": "^3.2.5",
+    "eslint": "^8.56.0"
+  }
+}
