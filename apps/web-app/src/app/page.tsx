@@ -15,7 +15,11 @@ import {
   DollarSign,
   HelpCircle,
   FileText,
-  AlertCircle
+  AlertCircle,
+  X,
+  Smartphone,
+  ChevronRight,
+  QrCode
 } from 'lucide-react';
 import { t } from '@turnia/i18n';
 
@@ -30,7 +34,15 @@ export default function Home() {
 
   const [inputText, setInputText] = useState('');
   const [market, setMarket] = useState<'es-ES' | 'es-AR'>('es-ES');
-  const [selectedPlan, setSelectedPlan] = useState<'esencial' | 'pro' | null>(null);
+  const [showWizard, setShowWizard] = useState(false);
+  const [wizardStep, setWizardStep] = useState(1);
+
+  // Setup Wizard Form States
+  const [wizardData, setWizardData] = useState({
+    businessName: '',
+    phone: '',
+    calendarConnected: false
+  });
 
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,7 +52,6 @@ export default function Home() {
     setMessages(newMessages);
     setInputText('');
 
-    // Simulated assistant response based on target values
     setTimeout(() => {
       setMessages(prev => [...prev, { 
         sender: 'turnia', 
@@ -50,6 +61,11 @@ export default function Home() {
   };
 
   const slots = ['16:30', '18:00', '19:15'];
+
+  const startOnboarding = (plan: 'esencial' | 'pro') => {
+    setWizardStep(1);
+    setShowWizard(true);
+  };
 
   return (
     <div className="min-h-screen bg-[#06050F] text-[#E4E3EC] font-sans antialiased overflow-x-hidden relative selection:bg-indigo-500 selection:text-white">
@@ -79,23 +95,22 @@ export default function Home() {
               <Globe className="w-3.5 h-3.5 text-indigo-400" />
               {market === 'es-ES' ? 'España (EUR €)' : 'Argentina (ARS $)'}
             </button>
-            <a 
-              href="#pricing" 
+            <button 
+              onClick={() => startOnboarding('pro')}
               className="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 transition-all text-xs font-semibold text-white shadow-md shadow-indigo-600/10"
             >
-              Ver Planes
-            </a>
+              Prueba de Onboarding
+            </button>
           </div>
         </div>
       </nav>
 
       {/* Hero Section */}
       <header className="max-w-7xl mx-auto px-6 pt-16 pb-12 grid lg:grid-cols-12 gap-12 items-center">
-        {/* Hero Left */}
         <div className="lg:col-span-5 space-y-6">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/10 border border-green-500/20 text-green-400 text-xs font-semibold">
             <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-            <span>Funciona por WhatsApp</span>
+            <span>Onboarding 100% Self-Service</span>
           </div>
           
           <h1 className="text-4xl lg:text-6xl font-extrabold tracking-tight text-white leading-tight">
@@ -103,21 +118,21 @@ export default function Home() {
           </h1>
           
           <p className="text-gray-400 text-base leading-relaxed">
-            Para peluquerías, barberías y centros de estética que reciben sus reservas por WhatsApp y quieren dejar de contestarlas a mano.
+            Para peluquerías, barberías y centros de estética. Configura tu número de WhatsApp y tu calendario en 5 minutos a través de nuestro asistente inteligente guiado.
           </p>
 
           <div className="pt-2 flex flex-col sm:flex-row gap-4">
-            <a 
-              href="#pricing" 
+            <button 
+              onClick={() => startOnboarding('pro')}
               className="px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 transition-all text-sm font-bold text-white text-center shadow-lg shadow-indigo-600/20 flex items-center justify-center gap-2"
             >
-              Comenzar prueba gratis <ArrowRight className="w-4 h-4" />
-            </a>
+              Probar Asistente de Configuración <ArrowRight className="w-4 h-4" />
+            </button>
             <a 
-              href="#demo" 
+              href="#pricing" 
               className="px-6 py-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-sm font-semibold text-white text-center flex items-center justify-center"
             >
-              Ver cómo funciona
+              Ver Planes
             </a>
           </div>
         </div>
@@ -224,6 +239,179 @@ export default function Home() {
         </div>
       </header>
 
+      {/* Onboarding Setup Wizard Popup Modal */}
+      {showWizard && (
+        <div className="fixed inset-0 z-50 bg-[#06050F]/90 backdrop-blur-md flex items-center justify-center p-6 animate-fade-in">
+          <div className="w-full max-w-lg bg-[#0F0E28] border border-indigo-500/30 rounded-3xl p-8 relative shadow-2xl shadow-indigo-500/10 flex flex-col justify-between min-h-[500px]">
+            {/* Close button */}
+            <button 
+              onClick={() => setShowWizard(false)}
+              className="absolute top-6 right-6 p-1.5 rounded-lg bg-white/5 border border-white/10 text-gray-400 hover:text-white transition-all"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            {/* Stepper Header */}
+            <div>
+              <div className="flex items-center gap-3 text-indigo-400 mb-2">
+                <Sparkles className="w-5 h-5" />
+                <span className="text-xs font-bold uppercase tracking-wider font-mono">Asistente de Configuración Turnia</span>
+              </div>
+              
+              {/* Step indicator */}
+              <div className="flex gap-2 mb-6">
+                {[1, 2, 3, 4].map((step) => (
+                  <div 
+                    key={step} 
+                    className={`flex-1 h-1.5 rounded-full transition-all ${
+                      wizardStep >= step ? 'bg-indigo-500' : 'bg-white/10'
+                    }`} 
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Step Contents */}
+            <div className="flex-1 my-6">
+              {/* STEP 1: Business Details */}
+              {wizardStep === 1 && (
+                <div className="space-y-4 animate-slide-up">
+                  <div className="space-y-1">
+                    <h3 className="text-lg font-bold text-white">Cuéntanos sobre tu negocio</h3>
+                    <p className="text-xs text-gray-400">Comencemos por el nombre comercial y mercado operativo.</p>
+                  </div>
+                  <div className="space-y-3 pt-2">
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">Nombre del local</label>
+                      <input 
+                        type="text" 
+                        value={wizardData.businessName}
+                        onChange={(e) => setWizardData({...wizardData, businessName: e.target.value})}
+                        placeholder="Ej. Barbería Córdoba" 
+                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500 transition-all text-white"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">Zona Horaria e Idioma</label>
+                      <div className="p-3 rounded-xl bg-white/5 border border-white/5 text-xs text-gray-400 flex justify-between items-center">
+                        <span>{market === 'es-ES' ? 'España (Europe/Madrid - es-ES)' : 'Argentina (America/Buenos_Aires - es-AR)'}</span>
+                        <Globe className="w-4 h-4 text-indigo-400" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* STEP 2: Connect WhatsApp */}
+              {wizardStep === 2 && (
+                <div className="space-y-4 animate-slide-up">
+                  <div className="space-y-1">
+                    <h3 className="text-lg font-bold text-white">Conecta tu WhatsApp Business</h3>
+                    <p className="text-xs text-gray-400">Escanea el código QR desde tu app para habilitar las respuestas automáticas.</p>
+                  </div>
+                  <div className="flex flex-col items-center justify-center p-4 bg-white/5 border border-white/5 rounded-2xl gap-4">
+                    <div className="p-3 bg-white rounded-xl shadow-lg relative flex items-center justify-center">
+                      <QrCode className="w-32 h-32 text-gray-900" />
+                      <div className="absolute inset-0 bg-[#0F0E28]/40 backdrop-blur-[1px] rounded-xl flex items-center justify-center">
+                        <span className="px-3 py-1.5 rounded-lg bg-green-500 text-white font-bold text-[10px] tracking-wide uppercase shadow-lg shadow-green-500/20">Listo para vincular</span>
+                      </div>
+                    </div>
+                    <p className="text-[10px] text-gray-400 text-center max-w-xs">
+                      Ve a WhatsApp &gt; Dispositivos vinculados &gt; Vincular un dispositivo. El número personal se mantendrá intacto.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* STEP 3: Sync Google Calendar */}
+              {wizardStep === 3 && (
+                <div className="space-y-4 animate-slide-up">
+                  <div className="space-y-1">
+                    <h3 className="text-lg font-bold text-white">Sincroniza tu Google Calendar</h3>
+                    <p className="text-xs text-gray-400">Esto permite a Turnia consultar disponibilidad real y bloquear citas sin solapamientos.</p>
+                  </div>
+                  <div className="py-6 flex flex-col items-center justify-center gap-4">
+                    {wizardData.calendarConnected ? (
+                      <div className="w-full p-6 rounded-2xl bg-green-500/10 border border-green-500/20 text-center space-y-2">
+                        <CheckCircle2 className="w-8 h-8 text-green-400 mx-auto" />
+                        <h4 className="text-sm font-bold text-white">Calendario Google Conectado</h4>
+                        <p className="text-xs text-gray-500">hola@tu-barberia.com</p>
+                      </div>
+                    ) : (
+                      <button 
+                        onClick={() => setWizardData({...wizardData, calendarConnected: true})}
+                        className="px-6 py-4 rounded-xl bg-white text-gray-900 hover:bg-gray-100 transition-all font-bold text-sm shadow-xl flex items-center gap-3"
+                      >
+                        <svg className="w-5 h-5" viewBox="0 0 24 24">
+                          <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v3.9h6.6c-.28 1.48-1.12 2.73-2.38 3.58v3h3.8c2.25-2.07 3.53-5.1 3.53-8.4z"/>
+                          <path fill="#34A853" d="M12 24c3.24 0 5.97-1.08 7.96-2.9l-3.8-3c-1.06.7-2.42 1.13-4.16 1.13-3.2 0-5.9-2.16-6.86-5.07H1.3v3.1C3.28 21.2 7.37 24 12 24z"/>
+                          <path fill="#FBBC05" d="M5.14 14.16A7.18 7.18 0 0 1 4.8 12c0-.75.13-1.48.34-2.16V6.74H1.3a11.96 11.96 0 0 0 0 10.52l3.84-3.1z"/>
+                          <path fill="#EA4335" d="M12 4.77c1.77 0 3.35.6 4.6 1.8l3.43-3.43C17.96 1.18 15.22 0 12 0 7.37 0 3.28 2.8 1.3 6.74l3.84 3.1c.96-2.9 3.66-5.07 6.86-5.07z"/>
+                        </svg>
+                        Conectar Google Calendar
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* STEP 4: Success & Verification */}
+              {wizardStep === 4 && (
+                <div className="space-y-4 text-center py-6 animate-slide-up">
+                  <div className="w-16 h-16 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center mx-auto mb-2">
+                    <Sparkles className="w-8 h-8" />
+                  </div>
+                  <div className="space-y-1">
+                    <h3 className="text-xl font-bold text-white">¡Configuración Completa!</h3>
+                    <p className="text-xs text-gray-400">Tu agenda inteligente ya está conectada y lista para recibir turnos.</p>
+                  </div>
+                  <div className="p-4 rounded-xl bg-white/5 border border-white/5 text-xs text-left text-gray-300 leading-relaxed max-w-sm mx-auto">
+                    <p className="font-semibold text-indigo-400 mb-1">Resumen del Onboarding:</p>
+                    <ul className="space-y-1 list-disc pl-4 text-gray-400">
+                      <li>Local: {wizardData.businessName || 'Barbería Demo'}</li>
+                      <li>Canal: WhatsApp Vinculado</li>
+                      <li>Calendario: Google Sync Activo</li>
+                    </ul>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Stepper Footer Controls */}
+            <div className="flex justify-between items-center border-t border-white/5 pt-4">
+              {wizardStep > 1 && wizardStep < 4 ? (
+                <button 
+                  onClick={() => setWizardStep(wizardStep - 1)}
+                  className="px-4 py-2 text-xs font-semibold text-gray-400 hover:text-white transition-all"
+                >
+                  Atrás
+                </button>
+              ) : (
+                <div />
+              )}
+
+              {wizardStep < 4 ? (
+                <button
+                  disabled={wizardStep === 1 && !wizardData.businessName}
+                  onClick={() => setWizardStep(wizardStep + 1)}
+                  className="px-5 py-2.5 rounded-xl bg-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-indigo-500 text-xs font-bold text-white flex items-center gap-1.5 transition-all shadow-md shadow-indigo-600/10"
+                >
+                  Siguiente <ChevronRight className="w-3.5 h-3.5" />
+                </button>
+              ) : (
+                <button
+                  onClick={() => setShowWizard(false)}
+                  className="w-full py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-xs font-bold text-white transition-all shadow-lg shadow-indigo-600/20"
+                >
+                  Finalizar e ir al Dashboard
+                </button>
+              )}
+            </div>
+
+          </div>
+        </div>
+      )}
+
       {/* Section: Problems (¿Te suena alguna de estas?) */}
       <section className="bg-[#0B0A1C] border-y border-white/5 py-20 px-6">
         <div className="max-w-7xl mx-auto space-y-12">
@@ -329,7 +517,7 @@ export default function Home() {
           <div className="space-y-1">
             <span className="text-[10px] uppercase font-bold tracking-wider text-yellow-500 font-mono bg-yellow-500/10 px-2 py-0.5 rounded-full">Oferta de Lanzamiento</span>
             <h3 className="text-lg font-bold text-white">¡Por entrar hoy, llévate 50% de descuento!</h3>
-            <p className="text-xs text-gray-400">Los primeros 2 meses al 50% + Instalación y configuración a 0 € + Soporte cercano de 15 días.</p>
+            <p className="text-xs text-gray-400">Los primeros 2 meses al 50% + Asistente virtual de autoconfiguración a 0 € + Soporte cercano de 15 días.</p>
           </div>
           <div className="text-2xl font-black text-yellow-500 shrink-0 font-mono">
             {market === 'es-ES' ? '19,50 €/mes' : '15.000 $'}
@@ -363,16 +551,16 @@ export default function Home() {
                   <span className="text-indigo-400 font-bold">✓</span> Recordatorios automáticos
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="text-indigo-400 font-bold">✓</span> Panel para visualizar tus citas
+                  <span className="text-indigo-400 font-bold">✓</span> Asistente guiado de onboarding
                 </li>
               </ul>
             </div>
 
             <button 
-              onClick={() => setSelectedPlan('esencial')}
+              onClick={() => startOnboarding('esencial')}
               className="w-full py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all text-xs font-bold text-white mt-8 text-center"
             >
-              Contratar Esencial
+              Comenzar Setup Esencial
             </button>
           </div>
 
@@ -409,86 +597,54 @@ export default function Home() {
                   <span className="text-indigo-400 font-bold">✓</span> Lista de espera automática
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="text-indigo-400 font-bold">✓</span> Panel de control avanzado + métricas
+                  <span className="text-indigo-400 font-bold">✓</span> Asistente autogestionado completo
                 </li>
               </ul>
             </div>
 
             <button 
-              onClick={() => setSelectedPlan('pro')}
+              onClick={() => startOnboarding('pro')}
               className="w-full py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 transition-all text-xs font-bold text-white mt-8 text-center shadow-lg shadow-indigo-600/10"
             >
-              Contratar Plan PRO
+              Comenzar Setup PRO
             </button>
           </div>
         </div>
-
-        {/* Payment / Hiring Instructions Overlay */}
-        {selectedPlan && (
-          <div className="max-w-xl mx-auto p-6 rounded-2xl bg-white/5 border border-indigo-500/30 space-y-4">
-            <h4 className="text-sm font-bold text-white flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-green-400" />
-              ¿Cómo contratar el Plan {selectedPlan.toUpperCase()}?
-            </h4>
-            <div className="text-xs text-gray-400 space-y-3 leading-relaxed">
-              <p>Ofrecemos métodos de pago adaptados a tu país para tu comodidad:</p>
-              <ul className="list-decimal pl-4 space-y-2">
-                <li>
-                  {market === 'es-ES' 
-                    ? 'Pago seguro con tarjeta de crédito/débito y SEPA a través de Stripe.' 
-                    : 'Pago seguro en pesos argentinos mediante suscripción de MercadoPago o transferencia bancaria.'}
-                </li>
-                <li>Haremos una visita virtual o presencial de 1 hora para configurar tus servicios, precios y horarios.</li>
-                <li>Conectaremos tu WhatsApp a un número dedicado de Turnia. ¡Tu número personal no cambia!</li>
-              </ul>
-              <div className="pt-2 flex flex-col gap-2 items-center">
-                <p className="font-semibold text-indigo-400">Escríbenos o llámanos para activarlo hoy:</p>
-                <a href="mailto:hola@turnia.es" className="text-white hover:underline font-mono">hola@turnia.es</a>
-                <span className="text-gray-500 text-[10px] font-mono">{market === 'es-ES' ? 'turnia.es' : 'turnia.com.ar'}</span>
-              </div>
-            </div>
-          </div>
-        )}
       </section>
 
       {/* Section: Implementation Steps (Cómo lo ponemos en marcha) */}
       <section className="bg-[#0B0A1C] border-t border-white/5 py-20 px-6">
         <div className="max-w-7xl mx-auto space-y-12">
           <div className="text-center space-y-3">
-            <h2 className="text-3xl font-extrabold text-white">Cómo lo ponemos en marcha</h2>
-            <p className="text-gray-400 text-sm">Una configuración de una hora. Tú sigues con tus citas mientras lo armamos.</p>
+            <h2 className="text-3xl font-extrabold text-white">Cómo lo pones en marcha</h2>
+            <p className="text-gray-400 text-sm">Cero llamadas de venta, cero visitas físicas. Todo a tu propio ritmo.</p>
           </div>
 
-          <div className="grid md:grid-cols-5 gap-6">
+          <div className="grid md:grid-cols-4 gap-6 max-w-4xl mx-auto">
             <div className="p-5 rounded-xl bg-white/5 border border-white/5 space-y-2">
               <span className="text-xs font-mono text-indigo-400 font-bold block">01</span>
-              <h4 className="text-sm font-bold text-white">Charla inicial</h4>
-              <p className="text-xs text-gray-500">Revisamos tu agenda actual y resolvemos dudas sin tecnicismos.</p>
+              <h4 className="text-sm font-bold text-white">Crea tu cuenta</h4>
+              <p className="text-xs text-gray-500">Regístrate en segundos ingresando el nombre de tu salón.</p>
             </div>
             <div className="p-5 rounded-xl bg-white/5 border border-white/5 space-y-2">
               <span className="text-xs font-mono text-indigo-400 font-bold block">02</span>
-              <h4 className="text-sm font-bold text-white">Configuración</h4>
-              <p className="text-xs text-gray-500">Metemos tus servicios, precios, profesionales y horarios en el panel.</p>
+              <h4 className="text-sm font-bold text-white">Conecta WhatsApp</h4>
+              <p className="text-xs text-gray-500">Escanea el código QR en pantalla para habilitar el bot.</p>
             </div>
             <div className="p-5 rounded-xl bg-white/5 border border-white/5 space-y-2">
               <span className="text-xs font-mono text-indigo-400 font-bold block">03</span>
-              <h4 className="text-sm font-bold text-white">Conexión</h4>
-              <p className="text-xs text-gray-500">Conectamos tu agenda con Google Calendar y configuramos tu número.</p>
+              <h4 className="text-sm font-bold text-white">Enlaza Google Calendar</h4>
+              <p className="text-xs text-gray-500">Vincula tu cuenta de Google con un clic para sincronizar turnos.</p>
             </div>
             <div className="p-5 rounded-xl bg-white/5 border border-white/5 space-y-2">
               <span className="text-xs font-mono text-indigo-400 font-bold block">04</span>
-              <h4 className="text-sm font-bold text-white">Pruebas</h4>
-              <p className="text-xs text-gray-500">Hacemos reservas de prueba juntos para que veas cómo se llena sola tu agenda.</p>
-            </div>
-            <div className="p-5 rounded-xl bg-white/5 border border-white/5 space-y-2">
-              <span className="text-xs font-mono text-indigo-400 font-bold block">05</span>
-              <h4 className="text-sm font-bold text-white">En marcha</h4>
-              <p className="text-xs text-gray-500">Turnia queda respondiendo 24/7 y te damos soporte diario.</p>
+              <h4 className="text-sm font-bold text-white">¡Listo!</h4>
+              <p className="text-xs text-gray-500">El asistente virtual ya responde y reserva por ti 24/7.</p>
             </div>
           </div>
 
           <div className="text-center font-bold text-sm text-indigo-400 pt-4">
-            En menos de una hora estás funcionando. Y los primeros 3 meses, sin costo de instalación.
+            En menos de 5 minutos estás funcionando. Sin esperas.
           </div>
         </div>
       </section>
