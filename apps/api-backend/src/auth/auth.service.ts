@@ -34,7 +34,7 @@ export class AuthService {
     const hashedPassword = await argon2.hash(dto.password);
 
     // Atomic transaction for database consistency
-    const result = await this.prisma.client.$transaction(async (tx) => {
+    const result = await this.prisma.client.$transaction(async (tx: any) => {
       // 1. Create the Tenant
       const tenant = await tx.tenant.create({
         data: {
