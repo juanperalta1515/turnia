@@ -99,7 +99,7 @@ export default function Home() {
       {/* Load PayPal Hosted Buttons SDK Script */}
       <Script 
         src="https://www.paypal.com/sdk/js?client-id=BAA5Q7YVPzONSpWno64mksw1u9oNkuZBKdObQCwzHuelOXixRRkYBrjMPAT1zjvDNWYRaOqknki6V_xDTg&components=hosted-buttons&disable-funding=venmo&currency=EUR"
-        crossorigin="anonymous" 
+        crossOrigin="anonymous" 
         strategy="lazyOnload"
       />
 
