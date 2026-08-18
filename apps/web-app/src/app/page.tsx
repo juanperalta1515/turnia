@@ -1,25 +1,19 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import Script from 'next/script';
 import { 
   Calendar as CalendarIcon, 
-  MessageSquare, 
-  Clock, 
   Sparkles, 
   CheckCircle2, 
-  TrendingUp, 
   Send,
   ArrowRight,
   ShieldCheck,
   Globe,
-  DollarSign,
-  HelpCircle,
-  FileText,
-  AlertCircle,
   X,
-  Smartphone,
   ChevronRight,
-  QrCode
+  QrCode,
+  CreditCard
 } from 'lucide-react';
 import { t } from '@turnia/i18n';
 
@@ -36,14 +30,17 @@ export default function Home() {
   const [market, setMarket] = useState<'es-ES' | 'es-AR'>('es-ES');
   const [showWizard, setShowWizard] = useState(false);
   const [wizardStep, setWizardStep] = useState(1);
+  const [selectedPlan, setSelectedPlan] = useState<'esencial' | 'pro' | null>(null);
 
   // Setup Wizard Form States
   const [wizardData, setWizardData] = useState({
     businessName: '',
     phone: '',
-    calendarConnected: false
+    calendarConnected: false,
+    paymentCompleted: false
   });
 
+  // Handle message send simulation
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputText.trim()) return;
@@ -63,12 +60,49 @@ export default function Home() {
   const slots = ['16:30', '18:00', '19:15'];
 
   const startOnboarding = (plan: 'esencial' | 'pro') => {
+    setSelectedPlan(plan);
     setWizardStep(1);
     setShowWizard(true);
   };
 
+  // Dynamically initialize the PayPal hosted button when the payment step is mounted
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    
+    if (showWizard && wizardStep === 4 && selectedPlan === 'esencial') {
+      timer = setTimeout(() => {
+        const containerId = "#paypal-container-J38N5WXD5G2YS";
+        const container = document.querySelector(containerId);
+        
+        if (container && (window as any).paypal) {
+          container.innerHTML = ""; // Clear duplicate render instances
+          try {
+            (window as any).paypal.HostedButtons({
+              hostedButtonId: "J38N5WXD5G2YS"
+            })
+            .render(containerId);
+            console.log("PayPal Hosted Button rendered successfully.");
+          } catch (err) {
+            console.error("Error rendering PayPal Hosted Button:", err);
+          }
+        }
+      }, 300);
+    }
+
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
+  }, [showWizard, wizardStep, selectedPlan]);
+
   return (
     <div className="min-h-screen bg-[#06050F] text-[#E4E3EC] font-sans antialiased overflow-x-hidden relative selection:bg-indigo-500 selection:text-white">
+      {/* Load PayPal Hosted Buttons SDK Script */}
+      <Script 
+        src="https://www.paypal.com/sdk/js?client-id=BAA5Q7YVPzONSpWno64mksw1u9oNkuZBKdObQCwzHuelOXixRRkYBrjMPAT1zjvDNWYRaOqknki6V_xDTg&components=hosted-buttons&disable-funding=venmo&currency=EUR"
+        crossorigin="anonymous" 
+        strategy="lazyOnload"
+      />
+
       {/* Background glow animations */}
       <div className="absolute top-[-5%] left-[-10%] w-[60%] h-[60%] rounded-full bg-indigo-900/10 blur-[130px] pointer-events-none" />
       <div className="absolute top-[40%] right-[-10%] w-[50%] h-[50%] rounded-full bg-purple-900/10 blur-[130px] pointer-events-none" />
@@ -96,7 +130,7 @@ export default function Home() {
               {market === 'es-ES' ? 'España (EUR €)' : 'Argentina (ARS $)'}
             </button>
             <button 
-              onClick={() => startOnboarding('pro')}
+              onClick={() => startOnboarding('esencial')}
               className="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 transition-all text-xs font-semibold text-white shadow-md shadow-indigo-600/10"
             >
               Prueba de Onboarding
@@ -123,7 +157,7 @@ export default function Home() {
 
           <div className="pt-2 flex flex-col sm:flex-row gap-4">
             <button 
-              onClick={() => startOnboarding('pro')}
+              onClick={() => startOnboarding('esencial')}
               className="px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 transition-all text-sm font-bold text-white text-center shadow-lg shadow-indigo-600/20 flex items-center justify-center gap-2"
             >
               Probar Asistente de Configuración <ArrowRight className="w-4 h-4" />
@@ -255,12 +289,12 @@ export default function Home() {
             <div>
               <div className="flex items-center gap-3 text-indigo-400 mb-2">
                 <Sparkles className="w-5 h-5" />
-                <span className="text-xs font-bold uppercase tracking-wider font-mono">Asistente de Configuración Turnia</span>
+                <span className="text-xs font-bold uppercase tracking-wider font-mono">Configuración de Turnia</span>
               </div>
               
               {/* Step indicator */}
               <div className="flex gap-2 mb-6">
-                {[1, 2, 3, 4].map((step) => (
+                {[1, 2, 3, 4, 5].map((step) => (
                   <div 
                     key={step} 
                     className={`flex-1 h-1.5 rounded-full transition-all ${
@@ -272,7 +306,7 @@ export default function Home() {
             </div>
 
             {/* Step Contents */}
-            <div className="flex-1 my-6">
+            <div className="flex-grow my-6 overflow-y-auto pr-1">
               {/* STEP 1: Business Details */}
               {wizardStep === 1 && (
                 <div className="space-y-4 animate-slide-up">
@@ -355,8 +389,56 @@ export default function Home() {
                 </div>
               )}
 
-              {/* STEP 4: Success & Verification */}
+              {/* STEP 4: Activation / Subscription Payment */}
               {wizardStep === 4 && (
+                <div className="space-y-4 animate-slide-up">
+                  <div className="space-y-1">
+                    <h3 className="text-lg font-bold text-white">Activar tu suscripción</h3>
+                    <p className="text-xs text-gray-400">Activa tu cuenta de Turnia para habilitar el servicio 24/7.</p>
+                  </div>
+
+                  <div className="bg-[#12112C] border border-indigo-500/20 p-5 rounded-2xl space-y-4">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <h4 className="text-sm font-bold text-white uppercase tracking-wider">Plan {selectedPlan?.toUpperCase()}</h4>
+                        <p className="text-[10px] text-gray-400 mt-0.5">Suscripción Mensual Auto-gestionada</p>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-xl font-bold text-white font-mono">
+                          {selectedPlan === 'esencial' ? (market === 'es-ES' ? '39 €' : '30.000 ARS') : (market === 'es-ES' ? '79 €' : '60.000 ARS')}
+                        </span>
+                        <span className="text-[10px] text-gray-500 block">/mes</span>
+                      </div>
+                    </div>
+
+                    {selectedPlan === 'esencial' ? (
+                      <div className="space-y-3 pt-2">
+                        <p className="text-[10px] text-gray-400 text-center uppercase tracking-widest font-semibold">Método de Pago Seguro (PayPal)</p>
+                        
+                        {/* PayPal Container for hosted button rendering */}
+                        <div className="flex justify-center min-h-[50px] py-2">
+                          <div id="paypal-container-J38N5WXD5G2YS" className="w-full max-w-[280px]"></div>
+                        </div>
+                        
+                        <p className="text-[9px] text-gray-500 text-center leading-relaxed">
+                          Puedes cancelar o cambiar tu suscripción en cualquier momento desde tu panel de facturación.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="p-4 rounded-xl bg-white/5 border border-white/5 text-center text-xs text-gray-400 space-y-2">
+                        <CreditCard className="w-8 h-8 text-indigo-400 mx-auto" />
+                        <p className="font-semibold text-white">Pasarela PRO en integración</p>
+                        <p className="text-[10px] text-gray-500">
+                          Puedes registrarte temporalmente completando el asistente. Nos comunicaremos para habilitar tu botón de cobro de seña.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* STEP 5: Success & Verification */}
+              {wizardStep === 5 && (
                 <div className="space-y-4 text-center py-6 animate-slide-up">
                   <div className="w-16 h-16 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center mx-auto mb-2">
                     <Sparkles className="w-8 h-8" />
@@ -366,11 +448,12 @@ export default function Home() {
                     <p className="text-xs text-gray-400">Tu agenda inteligente ya está conectada y lista para recibir turnos.</p>
                   </div>
                   <div className="p-4 rounded-xl bg-white/5 border border-white/5 text-xs text-left text-gray-300 leading-relaxed max-w-sm mx-auto">
-                    <p className="font-semibold text-indigo-400 mb-1">Resumen del Onboarding:</p>
+                    <p className="font-semibold text-indigo-400 mb-1">Resumen de tu Onboarding:</p>
                     <ul className="space-y-1 list-disc pl-4 text-gray-400">
                       <li>Local: {wizardData.businessName || 'Barbería Demo'}</li>
                       <li>Canal: WhatsApp Vinculado</li>
                       <li>Calendario: Google Sync Activo</li>
+                      <li>Suscripción: Plan {selectedPlan?.toUpperCase()}</li>
                     </ul>
                   </div>
                 </div>
@@ -379,7 +462,7 @@ export default function Home() {
 
             {/* Stepper Footer Controls */}
             <div className="flex justify-between items-center border-t border-white/5 pt-4">
-              {wizardStep > 1 && wizardStep < 4 ? (
+              {wizardStep > 1 && wizardStep < 5 ? (
                 <button 
                   onClick={() => setWizardStep(wizardStep - 1)}
                   className="px-4 py-2 text-xs font-semibold text-gray-400 hover:text-white transition-all"
@@ -390,9 +473,12 @@ export default function Home() {
                 <div />
               )}
 
-              {wizardStep < 4 ? (
+              {wizardStep < 5 ? (
                 <button
-                  disabled={wizardStep === 1 && !wizardData.businessName}
+                  disabled={
+                    (wizardStep === 1 && !wizardData.businessName) ||
+                    (wizardStep === 3 && !wizardData.calendarConnected)
+                  }
                   onClick={() => setWizardStep(wizardStep + 1)}
                   className="px-5 py-2.5 rounded-xl bg-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-indigo-500 text-xs font-bold text-white flex items-center gap-1.5 transition-all shadow-md shadow-indigo-600/10"
                 >
@@ -412,7 +498,7 @@ export default function Home() {
         </div>
       )}
 
-      {/* Section: Problems (¿Te suena alguna de estas?) */}
+      {/* Section: Problems */}
       <section className="bg-[#0B0A1C] border-y border-white/5 py-20 px-6">
         <div className="max-w-7xl mx-auto space-y-12">
           <div className="text-center space-y-3">
@@ -456,7 +542,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Section: Cost (Lo que te cuesta cada mes) */}
+      {/* Section: Cost */}
       <section className="py-20 px-6 max-w-7xl mx-auto space-y-12">
         <div className="text-center space-y-3">
           <h2 className="text-3xl font-extrabold text-white">Lo que te cuesta cada mes</h2>
@@ -492,7 +578,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Section: Solution (¿Qué es Turnia?) */}
+      {/* Section: Solution */}
       <section className="bg-gradient-to-r from-indigo-900/40 to-purple-900/40 border-y border-white/5 py-20 px-6">
         <div className="max-w-4xl mx-auto text-center space-y-6">
           <h2 className="text-sm font-bold text-indigo-400 uppercase tracking-widest font-mono">¿Qué es Turnia?</h2>
@@ -505,7 +591,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Section: Pricing (¿Cuánto Cuesta?) */}
+      {/* Section: Pricing */}
       <section id="pricing" className="py-20 px-6 max-w-7xl mx-auto space-y-12">
         <div className="text-center space-y-3">
           <h2 className="text-3xl font-extrabold text-white">¿Cuánto cuesta?</h2>
@@ -558,7 +644,7 @@ export default function Home() {
 
             <button 
               onClick={() => startOnboarding('esencial')}
-              className="w-full py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all text-xs font-bold text-white mt-8 text-center"
+              className="w-full py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 transition-all text-xs font-bold text-white mt-8 text-center shadow-lg shadow-indigo-600/10"
             >
               Comenzar Setup Esencial
             </button>
@@ -612,7 +698,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Section: Implementation Steps (Cómo lo ponemos en marcha) */}
+      {/* Section: Implementation Steps */}
       <section className="bg-[#0B0A1C] border-t border-white/5 py-20 px-6">
         <div className="max-w-7xl mx-auto space-y-12">
           <div className="text-center space-y-3">
