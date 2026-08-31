@@ -14,25 +14,34 @@ import {
   Calendar,
   PhoneCall,
   MoreVertical,
-  Paperclip,
-  Smile
+  Scissors,
+  PauseCircle,
+  PlayCircle
 } from 'lucide-react';
 import { processIncomingMessage } from '../../server/botEngine';
+import { db } from '../../server/db';
 
 export function WhatsAppSimulator({ onAppointmentBooked }) {
   const [messages, setMessages] = useState([
     {
       id: 'msg-1',
+      sender: 'user',
+      text: "Hola, ¿queda hueco mañana por la tarde para corte y barba?",
+      time: "18:42"
+    },
+    {
+      id: 'msg-2',
       sender: 'bot',
-      text: "¡Hola! 👋 Soy el asistente virtual de *TURNIA*.\n\nEscribe *Hola* para ver los comercios o selecciona uno de los accesos directos abajo para comenzar a agendar tu turno.",
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      text: "¡Hola! 👋 Te puedo ofrecer mañana:\n\n👉  *16:30*   *18:00*   *19:15*\n\n¿Cuál de estos te va mejor?",
+      time: "18:42"
     }
   ]);
   const [inputText, setInputText] = useState('');
   const [loading, setLoading] = useState(false);
-  const [sessionInfo, setSessionInfo] = useState({ step: 'START', businessId: null });
-  const [userPhone, setUserPhone] = useState('+54 9 11 9876-5432');
-  const [clientName, setClientName] = useState('Mariano López');
+  const [sessionInfo, setSessionInfo] = useState({ step: 'AWAITING_TIME_CHOICE', businessId: 'biz-1' });
+  const [userPhone, setUserPhone] = useState('+34 654 987 321');
+  const [clientName, setClientName] = useState('David Morales');
+  const [isBotActive, setIsBotActive] = useState(true);
 
   const messagesEndRef = useRef(null);
 
@@ -60,7 +69,6 @@ export function WhatsAppSimulator({ onAppointmentBooked }) {
     setLoading(true);
 
     try {
-      // Llamar a la API del simulador o al motor localmente
       let replyText = '';
       let updatedSession = {};
 
@@ -79,16 +87,14 @@ export function WhatsAppSimulator({ onAppointmentBooked }) {
           replyText = data.replyText;
           updatedSession = data.session;
         } else {
-          throw new Error('Fallback to local engine');
+          throw new Error('Local fallback');
         }
       } catch (err) {
-        // Fallback al motor local importado
         const result = await processIncomingMessage(userPhone, text.trim(), clientName);
         replyText = result.replyText;
         updatedSession = result.updatedSession;
       }
 
-      // Pequeño delay de tipeo para realismo de WhatsApp
       setTimeout(() => {
         const botMsg = {
           id: `msg-${Date.now() + 1}`,
@@ -100,8 +106,7 @@ export function WhatsAppSimulator({ onAppointmentBooked }) {
         setSessionInfo(updatedSession || {});
         setLoading(false);
 
-        // Si se completó un turno, notificar al dashboard general
-        if (updatedSession?.step === 'COMPLETED' || replyText.includes('TURNO CONFIRMADO')) {
+        if (updatedSession?.step === 'COMPLETED' || replyText.includes('reservo') || replyText.includes('Google Calendar')) {
           if (onAppointmentBooked) onAppointmentBooked();
         }
       }, 500);
@@ -112,32 +117,27 @@ export function WhatsAppSimulator({ onAppointmentBooked }) {
     }
   };
 
-  const handleResetChat = async () => {
-    try {
-      await fetch('/api/bot/reset-session', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userPhone })
-      });
-    } catch (e) {}
+  const handleToggleBot = () => {
+    const nextStatus = db.toggleBotStatus('biz-1');
+    setIsBotActive(nextStatus);
+  };
 
-    setSessionInfo({ step: 'START', businessId: null });
+  const handleResetChat = () => {
+    db.clearSession(userPhone);
+    setSessionInfo({ step: 'START', businessId: 'biz-1' });
     setMessages([
       {
         id: `msg-${Date.now()}`,
         sender: 'bot',
-        text: "🔄 *Sesión reiniciada.*\n\nEscribe *Hola* para ver el directorio o elige una peluquería/comercio:",
+        text: "¡Hola! 👋 Te habla la agenda de *Barbería & Estilo King*.\n\n¿En qué te podemos ayudar? Escribe qué servicio buscas o si quieres agendar para hoy o mañana.",
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       }
     ]);
   };
 
-  // Formateador de texto estilo WhatsApp (*bold*, _italic_, `code`)
   const formatWhatsAppText = (rawText) => {
     return rawText.split('\n').map((line, lineIdx) => {
       let formatted = line;
-
-      // *bold*
       const parts = [];
       const boldRegex = /\*([^*]+)\*/g;
       let lastIndex = 0;
@@ -165,32 +165,32 @@ export function WhatsAppSimulator({ onAppointmentBooked }) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
       
-      {/* Columna Izquierda: Teléfono Mockup WhatsApp */}
+      {/* Columna Izquierda: Teléfono WhatsApp Marca Blanca */}
       <div className="lg:col-span-7 flex justify-center">
-        <div className="w-full max-w-md bg-[#0c1317] border-4 border-dark-800 rounded-[36px] shadow-2xl overflow-hidden flex flex-col h-[680px] relative">
+        <div className="w-full max-w-md bg-[#0c1317] border-4 border-dark-800 rounded-[36px] shadow-2xl overflow-hidden flex flex-col h-[700px] relative">
           
-          {/* Header Superior del Teléfono */}
+          {/* Header WhatsApp de la Barbería (Marca Blanca) */}
           <div className="bg-[#202c33] p-3.5 px-4 flex items-center justify-between border-b border-dark-800/80 z-10 shadow-md">
             <div className="flex items-center gap-3">
               <div className="relative">
-                <div className="w-10 h-10 rounded-full bg-emerald-600 flex items-center justify-center text-white font-bold shadow-md">
-                  <Bot className="w-5 h-5" />
+                <div className="w-10 h-10 rounded-full bg-emerald-700 flex items-center justify-center text-white font-bold shadow-md">
+                  <Scissors className="w-5 h-5" />
                 </div>
                 <div className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-400 border-2 border-[#202c33] rounded-full"></div>
               </div>
 
               <div>
                 <h3 className="font-bold text-sm text-slate-100 flex items-center gap-1.5">
-                  TURNIA Bot Central
-                  <ShieldCheck className="w-4 h-4 text-emerald-400" title="Número Oficial Verificado" />
+                  Tu Barbería
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
                 </h3>
                 <span className="text-[11px] text-emerald-400 flex items-center gap-1">
-                  En línea • Twilio WhatsApp
+                  en línea • Recepcionista Turnia
                 </span>
               </div>
             </div>
 
-            <div className="flex items-center gap-3 text-slate-400">
+            <div className="flex items-center gap-2 text-slate-400">
               <button 
                 onClick={handleResetChat}
                 title="Reiniciar chat"
@@ -201,12 +201,10 @@ export function WhatsAppSimulator({ onAppointmentBooked }) {
             </div>
           </div>
 
-          {/* Área de Mensajes con Wallpaper WhatsApp */}
+          {/* Área de Mensajes */}
           <div className="flex-1 wa-chat-pattern p-4 overflow-y-auto space-y-3 flex flex-col">
-            
-            {/* Aviso de cifrado / Multi-Tenant */}
-            <div className="mx-auto my-1 px-3 py-1.5 bg-[#182229] border border-dark-800/80 rounded-lg text-[10px] text-amber-300/80 text-center max-w-xs shadow-sm">
-              🔒 Mensajes procesados por la plataforma multi-tenant de TURNIA vía Twilio.
+            <div className="mx-auto my-1 px-3 py-1 bg-[#182229] border border-dark-800 rounded-lg text-[10px] text-slate-400 text-center max-w-xs shadow-sm">
+              🔒 El cliente escribe como siempre. No sabe que Turnia contesta por ti.
             </div>
 
             {messages.map((msg) => {
@@ -248,42 +246,36 @@ export function WhatsAppSimulator({ onAppointmentBooked }) {
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Chips de Respuestas Rápidas */}
+          {/* Chips de Respuestas Rápidas (Diapositiva 5 del PDF) */}
           <div className="bg-[#111b21] p-2 px-3 border-t border-dark-800/60 flex items-center gap-1.5 overflow-x-auto text-[11px]">
-            <span className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider shrink-0 mr-1">Rápido:</span>
+            <span className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider shrink-0 mr-1">Probar:</span>
             <button
-              onClick={() => sendMessage("Hola, quiero un turno en Barbería King")}
+              onClick={() => sendMessage("Hola, ¿queda hueco mañana por la tarde para corte y barba?")}
               className="px-2.5 py-1 bg-dark-900 hover:bg-emerald-900/40 border border-dark-800 hover:border-emerald-500/30 text-emerald-400 rounded-full shrink-0 transition-colors"
             >
-              💈 Barbería King
+              1. Preguntar por hueco
             </button>
             <button
-              onClick={() => sendMessage("Hola, quiero un turno en Salón Glam")}
+              onClick={() => sendMessage("Las 18:00 me va bien")}
+              className="px-2.5 py-1 bg-dark-900 hover:bg-blue-900/40 border border-dark-800 hover:border-blue-500/30 text-blue-400 rounded-full shrink-0 transition-colors"
+            >
+              2. Elegir 18:00 hs
+            </button>
+            <button
+              onClick={() => sendMessage("David Morales")}
               className="px-2.5 py-1 bg-dark-900 hover:bg-purple-900/40 border border-dark-800 hover:border-purple-500/30 text-purple-400 rounded-full shrink-0 transition-colors"
             >
-              ✨ Salón Glam
+              3. Enviar nombre
             </button>
             <button
-              onClick={() => sendMessage("1")}
-              className="px-2.5 py-1 bg-dark-900 hover:bg-blue-900/40 border border-dark-800 hover:border-blue-500/30 text-blue-400 rounded-full shrink-0 transition-colors"
-            >
-              1️⃣ Opción 1
-            </button>
-            <button
-              onClick={() => sendMessage("2")}
-              className="px-2.5 py-1 bg-dark-900 hover:bg-blue-900/40 border border-dark-800 hover:border-blue-500/30 text-blue-400 rounded-full shrink-0 transition-colors"
-            >
-              2️⃣ Opción 2
-            </button>
-            <button
-              onClick={() => sendMessage("Mis turnos")}
+              onClick={() => sendMessage("Mis citas")}
               className="px-2.5 py-1 bg-dark-900 hover:bg-amber-900/40 border border-dark-800 hover:border-amber-500/30 text-amber-400 rounded-full shrink-0 transition-colors"
             >
-              📋 Mis Turnos
+              Mis citas
             </button>
           </div>
 
-          {/* Input de Mensaje estilo WhatsApp */}
+          {/* Input de Mensaje */}
           <form
             onSubmit={(e) => { e.preventDefault(); sendMessage(); }}
             className="bg-[#202c33] p-2.5 px-3 flex items-center gap-2 border-t border-dark-800"
@@ -307,86 +299,78 @@ export function WhatsAppSimulator({ onAppointmentBooked }) {
         </div>
       </div>
 
-      {/* Columna Derecha: Inspector de Sesión & Guía Interactiva */}
+      {/* Columna Derecha: Panel de Control del Barbero (Handover & Calendar Sync) */}
       <div className="lg:col-span-5 space-y-5">
         
-        {/* Panel de Estado de Sesión en Tiempo Real */}
+        {/* Switch de Intervención Humana (Handover) */}
         <div className="glass-panel rounded-2xl p-5 md:p-6 space-y-4 shadow-xl border-l-4 border-l-emerald-500">
           <div className="flex items-center justify-between border-b border-dark-800 pb-3">
             <h3 className="font-display font-bold text-sm text-slate-100 flex items-center gap-2">
               <Bot className="w-4 h-4 text-emerald-400" />
-              Inspector del Motor Conversacional
+              Estado de la Recepcionista Turnia
             </h3>
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-mono">
-              Live State
-            </span>
+            <button
+              onClick={handleToggleBot}
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold transition-all ${
+                isBotActive 
+                  ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' 
+                  : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
+              }`}
+            >
+              {isBotActive ? <PlayCircle className="w-3.5 h-3.5" /> : <PauseCircle className="w-3.5 h-3.5" />}
+              {isBotActive ? 'Bot Contesta Solo' : 'Pausado (Hablas tú)'}
+            </button>
           </div>
 
-          <div className="space-y-3 text-xs">
-            <div className="flex justify-between items-center bg-dark-950/60 p-2.5 rounded-xl border border-dark-800">
-              <span className="text-slate-400">Paso Actual del Bot:</span>
-              <span className="font-mono font-bold text-emerald-400 bg-emerald-950/40 px-2 py-0.5 rounded">
-                {sessionInfo.step || 'START'}
-              </span>
-            </div>
-
-            <div className="flex justify-between items-center bg-dark-950/60 p-2.5 rounded-xl border border-dark-800">
-              <span className="text-slate-400">Comercio Activo:</span>
-              <span className="font-semibold text-slate-200">
-                {sessionInfo.businessId ? sessionInfo.businessId : 'Sin seleccionar'}
-              </span>
-            </div>
-
-            <div className="flex justify-between items-center bg-dark-950/60 p-2.5 rounded-xl border border-dark-800">
-              <span className="text-slate-400">Teléfono Simulado:</span>
-              <input
-                type="text"
-                value={userPhone}
-                onChange={(e) => setUserPhone(e.target.value)}
-                className="bg-dark-900 border border-dark-800 rounded px-2 py-0.5 text-xs text-slate-300 w-36 font-mono text-right"
-              />
-            </div>
-          </div>
+          <p className="text-xs text-slate-300 leading-relaxed">
+            {isBotActive ? (
+              <span>🟢 <strong>Turnia responde automáticamente:</strong> Lee huecos libres en Google Calendar y agenda citas 24/7 sin interrumpirte mientras cortas.</span>
+            ) : (
+              <span>🔴 <strong>Turnia está en pausa:</strong> Puedes escribir manualmente al cliente desde tu móvil. Turnia no intervendrá hasta que vuelvas a activarlo.</span>
+            )}
+          </p>
         </div>
 
-        {/* Guía Rápida de Pruebas */}
-        <div className="glass-panel rounded-2xl p-5 md:p-6 space-y-3 shadow-xl">
+        {/* Flujo de 5 Pasos de la Presentación */}
+        <div className="glass-panel rounded-2xl p-5 md:p-6 space-y-3.5 shadow-xl">
           <h4 className="font-display font-bold text-xs uppercase tracking-wider text-slate-200 flex items-center gap-1.5">
             <Sparkles className="w-4 h-4 text-blue-400" />
-            Flujos para Probar en el Simulador:
+            Lo que el cliente experimenta (Diapositiva 5):
           </h4>
 
-          <ul className="space-y-2.5 text-xs text-slate-300 leading-relaxed">
-            <li className="flex items-start gap-2 p-2.5 bg-dark-950/40 rounded-xl border border-dark-800/80">
-              <span className="w-5 h-5 rounded-full bg-emerald-600/20 text-emerald-400 flex items-center justify-center font-bold shrink-0 mt-0.5 text-[11px]">1</span>
+          <div className="space-y-2 text-xs text-slate-300">
+            <div className="p-2.5 bg-dark-950/60 rounded-xl border border-dark-800/80 flex items-start gap-2.5">
+              <span className="w-5 h-5 rounded-full bg-emerald-600/20 text-emerald-400 flex items-center justify-center font-bold shrink-0 text-[11px]">1</span>
               <div>
-                <strong className="text-slate-100">Agendar Turno en Peluquería:</strong>
-                <p className="text-[11px] text-slate-400 mt-0.5">
-                  Haz clic en el chip <i>"💈 Barbería King"</i> ➔ Envía <strong>1</strong> (Servicio) ➔ Envía <strong>1</strong> (Profesional) ➔ Elige día y hora ➔ Ingresa tu nombre ➔ Envía <strong>1</strong> para confirmar.
-                </p>
+                <strong className="text-slate-100">Pregunta por un hueco:</strong>
+                <p className="text-[11px] text-slate-400">Como siempre, en lenguaje de toda la vida.</p>
               </div>
-            </li>
+            </div>
 
-            <li className="flex items-start gap-2 p-2.5 bg-dark-950/40 rounded-xl border border-dark-800/80">
-              <span className="w-5 h-5 rounded-full bg-blue-600/20 text-blue-400 flex items-center justify-center font-bold shrink-0 mt-0.5 text-[11px]">2</span>
+            <div className="p-2.5 bg-dark-950/60 rounded-xl border border-dark-800/80 flex items-start gap-2.5">
+              <span className="w-5 h-5 rounded-full bg-emerald-600/20 text-emerald-400 flex items-center justify-center font-bold shrink-0 text-[11px]">2</span>
               <div>
-                <strong className="text-slate-100">Consultar y Cancelar Turno:</strong>
-                <p className="text-[11px] text-slate-400 mt-0.5">
-                  Escribe <i>"Mis turnos"</i> para ver tus reservas y su código identificador.
-                </p>
+                <strong className="text-slate-100">Turnia mira tu Google Calendar:</strong>
+                <p className="text-[11px] text-slate-400">Y le ofrece tres huecos reales que existen.</p>
               </div>
-            </li>
+            </div>
 
-            <li className="flex items-start gap-2 p-2.5 bg-dark-950/40 rounded-xl border border-dark-800/80">
-              <span className="w-5 h-5 rounded-full bg-purple-600/20 text-purple-400 flex items-center justify-center font-bold shrink-0 mt-0.5 text-[11px]">3</span>
+            <div className="p-2.5 bg-dark-950/60 rounded-xl border border-dark-800/80 flex items-start gap-2.5">
+              <span className="w-5 h-5 rounded-full bg-emerald-600/20 text-emerald-400 flex items-center justify-center font-bold shrink-0 text-[11px]">3</span>
               <div>
-                <strong className="text-slate-100">Cambio de Comercio (Multi-Tenant):</strong>
-                <p className="text-[11px] text-slate-400 mt-0.5">
-                  Escribe <i>"Menu"</i> o <i>"Cambiar"</i> para elegir otro negocio como <i>Salón Glam</i> o <i>San Lucas</i>.
-                </p>
+                <strong className="text-slate-100">Elige uno y queda bloqueado:</strong>
+                <p className="text-[11px] text-slate-400">Aparece automático en tu Google Calendar.</p>
               </div>
-            </li>
-          </ul>
+            </div>
+
+            <div className="p-2.5 bg-dark-950/60 rounded-xl border border-dark-800/80 flex items-start gap-2.5">
+              <span className="w-5 h-5 rounded-full bg-emerald-600/20 text-emerald-400 flex items-center justify-center font-bold shrink-0 text-[11px]">4</span>
+              <div>
+                <strong className="text-slate-100">Recordatorio 24h y 2h antes:</strong>
+                <p className="text-[11px] text-slate-400">Los no-shows bajan del 10% al 3-5%.</p>
+              </div>
+            </div>
+          </div>
         </div>
 
       </div>

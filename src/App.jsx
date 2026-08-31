@@ -2,24 +2,28 @@ import React, { useState, useEffect } from 'react';
 import { 
   Bot, 
   CalendarCheck, 
+  Calendar as CalendarIcon,
   Scissors, 
   QrCode, 
   Key, 
   Sparkles, 
   Building2, 
   DollarSign, 
-  Users, 
   Clock, 
   MessageSquare,
   ShieldCheck,
-  ChevronRight,
+  Bell,
+  Award,
   Menu,
   X
 } from 'lucide-react';
 import { WhatsAppSimulator } from './components/WhatsAppSimulator';
+import { GoogleCalendarView } from './components/GoogleCalendarView';
+import { RemindersManager } from './components/RemindersManager';
 import { AppointmentsCalendar } from './components/AppointmentsCalendar';
 import { ServicesManager } from './components/ServicesManager';
 import { QrLinkGenerator } from './components/QrLinkGenerator';
+import { PitchPresentation } from './components/PitchPresentation';
 import { TwilioSettings } from './components/TwilioSettings';
 import { db } from '../server/db';
 
@@ -28,12 +32,11 @@ function App() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
-  // Estadísticas globales en tiempo real
   const [stats, setStats] = useState({
-    todayAppointments: 2,
-    totalAppointments: 3,
-    totalRevenue: 28500,
-    totalBusinesses: 3
+    todayAppointments: 1,
+    totalAppointments: 2,
+    totalRevenue: 40,
+    totalBusinesses: 2
   });
 
   const loadStats = () => {
@@ -61,9 +64,12 @@ function App() {
 
   const navItems = [
     { id: 'simulator', label: 'Simulador WhatsApp Bot', icon: Bot, badge: 'Live Chat' },
-    { id: 'calendar', label: 'Agenda de Turnos', icon: CalendarCheck, badge: `${stats.todayAppointments} hoy` },
-    { id: 'services', label: 'Servicios & Profesionales', icon: Scissors },
+    { id: 'gcalendar', label: 'Google Calendar Sync', icon: CalendarIcon, badge: 'Auto-Sync' },
+    { id: 'reminders', label: 'Recordatorios (24h y 2h)', icon: Bell, badge: '-70% No-Shows' },
+    { id: 'calendar', label: 'Agenda de Citas', icon: CalendarCheck },
+    { id: 'services', label: 'Servicios & Precios', icon: Scissors },
     { id: 'qr', label: 'Links & Códigos QR', icon: QrCode },
+    { id: 'pitch', label: 'Propuesta Comercial & Precios', icon: Award, highlight: true },
     { id: 'twilio', label: 'Conexión Twilio (Webhook)', icon: Key }
   ];
 
@@ -108,33 +114,28 @@ function App() {
               <span className="font-display font-extrabold text-xl tracking-wider bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent block">
                 TURNIA
               </span>
-              <span className="text-[10px] text-slate-500 font-mono block -mt-1">
-                WhatsApp Bot Platform
+              <span className="text-[10px] text-slate-400 italic block -mt-1">
+                Tu agenda responde sola.
               </span>
             </div>
           </div>
 
           {/* Business Info Card */}
-          <div className="bg-dark-950/70 border border-dark-800 rounded-2xl p-4 mb-5 relative overflow-hidden shadow-lg">
-            <div className="flex items-center gap-1.5 text-xs text-emerald-400 font-semibold uppercase tracking-wider mb-1">
+          <div className="bg-dark-950/70 border border-dark-800 rounded-2xl p-3.5 mb-4 relative overflow-hidden shadow-lg">
+            <div className="flex items-center gap-1.5 text-[11px] text-emerald-400 font-semibold uppercase tracking-wider mb-1">
               <ShieldCheck className="w-3.5 h-3.5" />
-              <span>Número Central</span>
+              <span>Recepcionista 24/7</span>
             </div>
             <h3 className="font-display font-bold text-sm text-slate-100 mb-0.5">
-              Twilio Multi-Tenant
+              Barbería & Estilo King
             </h3>
-            <p className="text-[11px] text-slate-400 font-mono">
-              +1 (415) 523-8886
+            <p className="text-[10px] text-slate-400">
+              Google Calendar: <strong className="text-slate-300">Conectado</strong>
             </p>
-
-            <div className="pt-2 mt-2 border-t border-dark-800/80 flex items-center justify-between text-[11px] text-slate-300">
-              <span>Comercios activos:</span>
-              <span className="font-bold text-emerald-400 font-mono">{stats.totalBusinesses}</span>
-            </div>
           </div>
 
           {/* Menú de Navegación */}
-          <nav className="space-y-1.5">
+          <nav className="space-y-1">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = activeTab === item.id;
@@ -146,19 +147,21 @@ function App() {
                     setIsMobileMenuOpen(false);
                   }}
                   className={`
-                    w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all duration-200
+                    w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all duration-200
                     ${isActive 
                       ? 'bg-emerald-600 text-white shadow-md shadow-emerald-500/10' 
-                      : 'text-slate-400 hover:text-slate-100 hover:bg-dark-800/60'
+                      : item.highlight
+                        ? 'text-amber-300 hover:text-amber-200 bg-amber-500/10 border border-amber-500/20 hover:bg-amber-500/20'
+                        : 'text-slate-400 hover:text-slate-100 hover:bg-dark-800/60'
                     }
                   `}
                 >
-                  <div className="flex items-center gap-2.5">
-                    <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-slate-400'}`} />
-                    <span>{item.label}</span>
+                  <div className="flex items-center gap-2.5 truncate">
+                    <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-white' : item.highlight ? 'text-amber-400' : 'text-slate-400'}`} />
+                    <span className="truncate">{item.label}</span>
                   </div>
                   {item.badge && (
-                    <span className={`text-[9px] px-2 py-0.5 rounded-full font-mono ${
+                    <span className={`text-[8px] px-1.5 py-0.5 rounded-full font-mono shrink-0 ml-1 ${
                       isActive ? 'bg-black/30 text-white' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
                     }`}>
                       {item.badge}
@@ -171,12 +174,12 @@ function App() {
         </div>
 
         {/* Footer Sidebar */}
-        <div className="pt-4 border-t border-dark-800 text-center space-y-1">
+        <div className="pt-3 border-t border-dark-800 text-center space-y-1">
           <div className="text-[10px] text-slate-500 font-mono">
-            TURNIA v1.0.0 • Twilio Ready
+            turnia.es • Sin instalar apps
           </div>
           <div className="text-[10px] text-emerald-400/80">
-            1 Número WhatsApp = ∞ Comercios
+            Ahorro: 200 - 400 € / mes
           </div>
         </div>
       </aside>
@@ -196,7 +199,7 @@ function App() {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           <div className="glass-panel rounded-2xl p-4 flex flex-col justify-between">
             <div className="flex items-center justify-between text-slate-400 text-xs">
-              <span>Turnos para Hoy</span>
+              <span>Citas para Hoy</span>
               <Clock className="w-4 h-4 text-emerald-400" />
             </div>
             <span className="font-display font-black text-2xl text-slate-100 mt-1">
@@ -206,31 +209,31 @@ function App() {
 
           <div className="glass-panel rounded-2xl p-4 flex flex-col justify-between">
             <div className="flex items-center justify-between text-slate-400 text-xs">
-              <span>Total Reservas Activas</span>
-              <CalendarCheck className="w-4 h-4 text-blue-400" />
+              <span>Google Calendar Sync</span>
+              <CalendarIcon className="w-4 h-4 text-blue-400" />
             </div>
             <span className="font-display font-black text-2xl text-blue-400 mt-1">
-              {stats.totalAppointments}
+              {stats.totalAppointments} bloqueados
             </span>
           </div>
 
           <div className="glass-panel rounded-2xl p-4 flex flex-col justify-between">
             <div className="flex items-center justify-between text-slate-400 text-xs">
-              <span>Ingresos Estimados</span>
+              <span>Facturación Citas</span>
               <DollarSign className="w-4 h-4 text-amber-400" />
             </div>
             <span className="font-display font-black text-2xl text-amber-400 mt-1 font-mono">
-              ${stats.totalRevenue.toLocaleString('es-AR')}
+              {stats.totalRevenue} €
             </span>
           </div>
 
           <div className="glass-panel rounded-2xl p-4 flex flex-col justify-between">
             <div className="flex items-center justify-between text-slate-400 text-xs">
-              <span>Comercios Conectados</span>
-              <Building2 className="w-4 h-4 text-purple-400" />
+              <span>Ahorro Tiempo Mensual</span>
+              <Sparkles className="w-4 h-4 text-purple-400" />
             </div>
             <span className="font-display font-black text-2xl text-purple-400 mt-1">
-              {stats.totalBusinesses}
+              10 - 16 h
             </span>
           </div>
         </div>
@@ -239,6 +242,14 @@ function App() {
         <div className="flex-1">
           {activeTab === 'simulator' && (
             <WhatsAppSimulator onAppointmentBooked={handleAppointmentBooked} />
+          )}
+
+          {activeTab === 'gcalendar' && (
+            <GoogleCalendarView refreshKey={refreshKey} />
+          )}
+
+          {activeTab === 'reminders' && (
+            <RemindersManager refreshKey={refreshKey} />
           )}
 
           {activeTab === 'calendar' && (
@@ -251,6 +262,10 @@ function App() {
 
           {activeTab === 'qr' && (
             <QrLinkGenerator onOpenSimulator={() => setActiveTab('simulator')} />
+          )}
+
+          {activeTab === 'pitch' && (
+            <PitchPresentation />
           )}
 
           {activeTab === 'twilio' && (
