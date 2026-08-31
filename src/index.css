@@ -4,46 +4,81 @@
 
 @layer base {
   body {
-    @apply bg-dark-950 text-slate-100 font-sans;
+    @apply bg-[#07090e] text-slate-100 font-sans antialiased selection:bg-emerald-500 selection:text-white;
   }
 }
 
-/* Custom Scrollbars */
+/* Custom Sleek Scrollbars */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 ::-webkit-scrollbar-track {
-  background: #0a0d14;
+  background: #07090e;
 }
 ::-webkit-scrollbar-thumb {
-  background: #232d48;
-  border-radius: 4px;
+  background: #1e2638;
+  border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #324063;
+  background: #2e3a55;
 }
 
-/* Glassmorphism Panels */
-.glass-panel {
-  background: rgba(15, 20, 34, 0.75);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(35, 45, 72, 0.6);
+/* Sleek CoreShift Design Tokens */
+.sleek-card {
+  background: rgba(14, 18, 28, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
-.glass-panel-hover {
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+.sleek-card-hover {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.glass-panel-hover:hover {
-  border-color: rgba(37, 211, 102, 0.4);
-  transform: translateY(-2px);
-  box-shadow: 0 12px 24px -10px rgba(37, 211, 102, 0.15);
+.sleek-card-hover:hover {
+  border-color: rgba(37, 211, 102, 0.35);
+  transform: translateY(-3px);
+  box-shadow: 0 25px 50px -12px rgba(16, 185, 129, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
-/* WhatsApp Simulator Specifics */
+/* Metallic Gradient Text */
+.text-gradient-hero {
+  background: linear-gradient(180deg, #FFFFFF 0%, #E2E8F0 60%, #94A3B8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-emerald {
+  background: linear-gradient(135deg, #34D399 0%, #10B981 50%, #059669 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-cyan {
+  background: linear-gradient(135deg, #38BDF8 0%, #0EA5E9 50%, #0284C7 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Glow Badges */
+.badge-glow {
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.15);
+}
+
+/* Subtle Grid Background Pattern */
+.bg-grid-pattern {
+  background-size: 40px 40px;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+}
+
+/* WhatsApp Pattern */
 .wa-chat-pattern {
-  background-color: #0b141a;
-  background-image: radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 0);
-  background-size: 16px 16px;
+  background-color: #080d11;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 0);
+  background-size: 18px 18px;
 }

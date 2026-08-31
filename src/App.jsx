@@ -10,13 +10,17 @@ import {
   Building2, 
   DollarSign, 
   Clock, 
-  MessageSquare,
-  ShieldCheck,
-  Bell,
-  Award,
-  Menu,
-  X
+  MessageSquare, 
+  ShieldCheck, 
+  Bell, 
+  Award, 
+  Menu, 
+  X, 
+  Globe, 
+  LayoutDashboard,
+  ArrowRight
 } from 'lucide-react';
+import { SleekLanding } from './components/SleekLanding';
 import { WhatsAppSimulator } from './components/WhatsAppSimulator';
 import { GoogleCalendarView } from './components/GoogleCalendarView';
 import { RemindersManager } from './components/RemindersManager';
@@ -28,6 +32,8 @@ import { TwilioSettings } from './components/TwilioSettings';
 import { db } from '../server/db';
 
 function App() {
+  // 'landing' o 'dashboard'
+  const [currentMode, setCurrentMode] = useState('landing');
   const [activeTab, setActiveTab] = useState('simulator');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -69,12 +75,43 @@ function App() {
     { id: 'calendar', label: 'Agenda de Citas', icon: CalendarCheck },
     { id: 'services', label: 'Servicios & Precios', icon: Scissors },
     { id: 'qr', label: 'Links & Códigos QR', icon: QrCode },
-    { id: 'pitch', label: 'Propuesta Comercial & Precios', icon: Award, highlight: true },
+    { id: 'pitch', label: 'Pitch Deck Oficial', icon: Award, highlight: true },
     { id: 'twilio', label: 'Conexión Twilio (Webhook)', icon: Key }
   ];
 
+  // Si estamos en modo Landing Page (CoreShift Style)
+  if (currentMode === 'landing') {
+    return (
+      <div className="relative">
+        {/* Floating Switcher Bar para el Usuario/Dev */}
+        <div className="fixed bottom-4 right-4 z-50">
+          <button
+            onClick={() => setCurrentMode('dashboard')}
+            className="sleek-card px-4 py-2.5 rounded-full bg-emerald-600/90 hover:bg-emerald-500 text-white text-xs font-bold shadow-2xl flex items-center gap-2 border border-emerald-400/30 transition-all hover:scale-105"
+          >
+            <LayoutDashboard className="w-4 h-4" />
+            <span>Abrir Panel de Control & Simulador</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+        <SleekLanding
+          onOpenSimulator={() => {
+            setCurrentMode('dashboard');
+            setActiveTab('simulator');
+          }}
+          onOpenDashboard={() => {
+            setCurrentMode('dashboard');
+            setActiveTab('calendar');
+          }}
+        />
+      </div>
+    );
+  }
+
+  // Si estamos en modo Dashboard / Panel de Gestión
   return (
-    <div className="min-h-screen bg-dark-950 flex flex-col md:flex-row relative">
+    <div className="min-h-screen bg-[#07090e] flex flex-col md:flex-row relative">
       
       {/* Background glow effects */}
       <div className="absolute top-0 left-1/3 w-96 h-96 bg-emerald-600/10 rounded-full blur-[120px] pointer-events-none"></div>
@@ -105,26 +142,37 @@ function App() {
         ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
         <div>
-          {/* Logo */}
-          <div className="hidden md:flex items-center gap-2.5 mb-6">
-            <div className="bg-emerald-600 p-2 rounded-xl shadow-lg shadow-emerald-500/20">
-              <Bot className="text-white w-5 h-5" />
-            </div>
-            <div>
-              <span className="font-display font-extrabold text-xl tracking-wider bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent block">
-                TURNIA
-              </span>
-              <span className="text-[10px] text-slate-400 italic block -mt-1">
-                Tu agenda responde sola.
-              </span>
+          {/* Logo & Switch a Landing */}
+          <div className="hidden md:flex items-center justify-between mb-6">
+            <div className="flex items-center gap-2.5">
+              <div className="bg-emerald-600 p-2 rounded-xl shadow-lg shadow-emerald-500/20">
+                <Bot className="text-white w-5 h-5" />
+              </div>
+              <div>
+                <span className="font-display font-extrabold text-xl tracking-wider bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent block">
+                  TURNIA
+                </span>
+                <span className="text-[10px] text-slate-400 italic block -mt-1">
+                  Tu agenda responde sola.
+                </span>
+              </div>
             </div>
           </div>
+
+          {/* Botón Ver Landing Pública */}
+          <button
+            onClick={() => setCurrentMode('landing')}
+            className="w-full mb-4 px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-emerald-400 flex items-center justify-center gap-2 transition-all"
+          >
+            <Globe className="w-3.5 h-3.5" />
+            <span>Ver Landing Page Pública</span>
+          </button>
 
           {/* Business Info Card */}
           <div className="bg-dark-950/70 border border-dark-800 rounded-2xl p-3.5 mb-4 relative overflow-hidden shadow-lg">
             <div className="flex items-center gap-1.5 text-[11px] text-emerald-400 font-semibold uppercase tracking-wider mb-1">
               <ShieldCheck className="w-3.5 h-3.5" />
-              <span>Recepcionista 24/7</span>
+              <span>Recepcionista Activa</span>
             </div>
             <h3 className="font-display font-bold text-sm text-slate-100 mb-0.5">
               Barbería & Estilo King
@@ -238,7 +286,7 @@ function App() {
           </div>
         </div>
 
-        {/* Renderizado de Vistas */}
+        {/* Renderizado de Vistas del Panel */}
         <div className="flex-1">
           {activeTab === 'simulator' && (
             <WhatsAppSimulator onAppointmentBooked={handleAppointmentBooked} />
