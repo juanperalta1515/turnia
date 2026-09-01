@@ -21,33 +21,35 @@ import {
   Bot,
   Bell,
   Star,
-  UserPlus
+  UserPlus,
+  Lock,
+  Gift
 } from 'lucide-react';
 
-export function SleekLanding({ onOpenSimulator, onOpenDashboard, onStartOnboarding }) {
+export function SleekLanding({ onOpenSimulator, onOpenDashboard, onStartOnboarding, onOpenLogin }) {
   const [billingCycle, setBillingCycle] = useState('launch'); // 'launch' (50% off) or 'regular'
   const [openFaq, setOpenFaq] = useState(null);
 
   const faqs = [
+    {
+      q: "¿Cómo funciona la prueba gratuita de 15 días?",
+      a: "Puedes conectar tu local y probar todas las funcionalidades durante 15 días completos sin pagar nada ni ingresar tarjeta de crédito. Al finalizar los 15 días, decides si activar tu plan mensual o darte de baja sin compromiso."
+    },
     {
       q: "¿Y si un cliente me pregunta algo raro por WhatsApp?",
       a: "Si Turnia no entiende la pregunta o es algo fuera de agenda, no inventa: te avisa a ti. La conversación queda pausada y tú puedes entrar a responder desde tu móvil en cualquier momento."
     },
     {
       q: "¿Tengo que cambiar mi número de WhatsApp?",
-      a: "No. El cliente le sigue escribiendo al número de WhatsApp de tu barbería. Nosotros nos encargamos de conectar las respuestas predeterminadas por detrás."
+      a: "No. El cliente le sigue escribiendo al número de WhatsApp de tu barbería, taller o clínica. Nosotros nos encargamos de conectar las respuestas predeterminadas por detrás."
     },
     {
       q: "¿Cómo se conecta con mi Google Calendar?",
       a: "Solo inicias sesión con tu cuenta de Google Calendar en nuestro asistente de 5 minutos. Cada vez que un cliente reserva por WhatsApp, el evento se crea solo en tu calendario con el nombre del cliente, teléfono y servicio."
     },
     {
-      q: "¿Y si quiero hablar yo directamente con el cliente?",
-      a: "En cualquier momento entras tú en la conversación desde tu WhatsApp o desde el panel y Turnia se calla automáticamente. Vuelve a contestar cuando tú lo decidas."
-    },
-    {
       q: "¿Tiene permanencia o penalización de baja?",
-      a: "Cero permanencia. El servicio es mes a mes. Si en algún momento no te aporta valor, lo cancelas en 1 clic y los datos de tu agenda siempre son 100% tuyos."
+      a: "Cero permanencia. El cobro tras los 15 días gratis es mensual. Si en algún momento no te aporta valor, lo cancelas en 1 clic y los datos de tu agenda siempre son 100% tuyos."
     }
   ];
 
@@ -61,6 +63,12 @@ export function SleekLanding({ onOpenSimulator, onOpenDashboard, onStartOnboardi
       {/* Background Radial Glows */}
       <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-gradient-to-b from-emerald-500/10 via-blue-500/5 to-transparent blur-[140px] pointer-events-none -z-10"></div>
       <div className="fixed bottom-0 right-0 w-[600px] h-[600px] bg-cyan-500/5 blur-[160px] pointer-events-none -z-10"></div>
+
+      {/* TOP ANNOUNCEMENT BANNER */}
+      <div className="bg-gradient-to-r from-emerald-950/80 via-emerald-900/60 to-blue-950/80 border-b border-emerald-500/20 py-2 px-4 text-center text-xs text-emerald-300 flex items-center justify-center gap-2">
+        <Gift className="w-3.5 h-3.5 text-emerald-400" />
+        <span><strong>15 Días de Prueba 100% Gratis:</strong> Prueba Turnia en tu negocio sin tarjeta de crédito. Cancela cuando quieras.</span>
+      </div>
 
       {/* 1. FLOATING SLEEK NAVBAR */}
       <header className="sticky top-4 z-50 max-w-6xl mx-auto px-4">
@@ -84,25 +92,26 @@ export function SleekLanding({ onOpenSimulator, onOpenDashboard, onStartOnboardi
             <a href="#como-funciona" className="hover:text-emerald-400 transition-colors">Cómo funciona</a>
             <a href="#beneficios" className="hover:text-emerald-400 transition-colors">Beneficios</a>
             <a href="#comparativa" className="hover:text-emerald-400 transition-colors">Comparativa</a>
-            <a href="#precios" className="hover:text-emerald-400 transition-colors">Precios</a>
+            <a href="#precios" className="hover:text-emerald-400 transition-colors">Precios (15d Gratis)</a>
             <a href="#faq" className="hover:text-emerald-400 transition-colors">FAQ</a>
           </nav>
 
           {/* CTA Buttons */}
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2">
             <button
-              onClick={onOpenSimulator}
-              className="hidden sm:flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-slate-200 transition-all"
+              onClick={onOpenLogin}
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-slate-200 transition-all"
             >
-              <Play className="w-3 h-3 text-emerald-400 fill-emerald-400" />
-              Probar Demo
+              <Lock className="w-3 h-3 text-blue-400" />
+              <span>Acceso Locales</span>
             </button>
+
             <button
               onClick={onStartOnboarding}
               className="px-4 py-1.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-lg shadow-emerald-500/25 transition-all hover:scale-105 flex items-center gap-1.5"
             >
-              <UserPlus className="w-3.5 h-3.5" />
-              <span>Conectar mi Local</span>
+              <Gift className="w-3.5 h-3.5" />
+              <span>15 Días Gratis</span>
             </button>
           </div>
 
@@ -115,7 +124,7 @@ export function SleekLanding({ onOpenSimulator, onOpenDashboard, onStartOnboardi
         {/* Pill Badge */}
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full badge-glow text-xs font-semibold text-emerald-300">
           <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-          <span>LA RECEPCIONISTA INVISIBLE PARA PELUQUERÍAS Y BARBERÍAS</span>
+          <span>LA RECEPCIONISTA INVISIBLE PARA BARBERÍAS, TALLERES Y CLÍNICAS</span>
         </div>
 
         {/* Hero Title */}
@@ -126,17 +135,25 @@ export function SleekLanding({ onOpenSimulator, onOpenDashboard, onStartOnboardi
 
         {/* Hero Subtitle */}
         <p className="text-base sm:text-lg text-slate-400 max-w-2xl mx-auto leading-relaxed font-normal">
-          Tus clientes le escriben a tu WhatsApp de siempre. Turnia contesta al instante con respuestas predeterminadas, bloquea el hueco en tu <strong className="text-slate-200">Google Calendar</strong> y manda los recordatorios.
+          Tus clientes le escriben a tu WhatsApp de siempre. Turnia contesta al instante con respuestas predeterminadas, bloquea el hueco en tu <strong className="text-slate-200">Google Calendar</strong> y manda los recordatorios. <strong className="text-emerald-400">Pruébalo 15 días gratis.</strong>
         </p>
 
         {/* Hero CTAs */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 pt-2">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 pt-2 flex-wrap">
           <button
             onClick={onStartOnboarding}
             className="w-full sm:w-auto px-7 py-3.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm shadow-xl shadow-emerald-500/30 transition-all hover:scale-105 flex items-center justify-center gap-2"
           >
-            <Zap className="w-4 h-4" />
-            <span>Configurar mi Barbería en 5 Minutos</span>
+            <Gift className="w-4 h-4" />
+            <span>Empezar 15 Días Gratis</span>
+          </button>
+
+          <button
+            onClick={onOpenLogin}
+            className="w-full sm:w-auto px-7 py-3.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-slate-200 font-semibold text-sm transition-all flex items-center justify-center gap-2"
+          >
+            <Lock className="w-4 h-4 text-blue-400" />
+            <span>Acceso Locales (Precios & Horarios)</span>
           </button>
 
           <button
@@ -144,7 +161,7 @@ export function SleekLanding({ onOpenSimulator, onOpenDashboard, onStartOnboardi
             className="w-full sm:w-auto px-7 py-3.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-slate-200 font-semibold text-sm transition-all flex items-center justify-center gap-2"
           >
             <MessageSquare className="w-4 h-4 text-emerald-400" />
-            <span>Ver Conversación de WhatsApp en Vivo</span>
+            <span>Ver Demo de WhatsApp</span>
           </button>
         </div>
 
@@ -537,7 +554,18 @@ export function SleekLanding({ onOpenSimulator, onOpenDashboard, onStartOnboardi
 
         </div>
 
-        <div className="mt-6 text-center text-xs text-slate-400 max-w-md mx-auto">
+        {/* Garantía de 15 Días Gratis */}
+        <div className="mt-8 p-4 rounded-2xl bg-emerald-950/20 border border-emerald-500/20 max-w-xl mx-auto text-center space-y-1">
+          <div className="text-xs font-bold text-emerald-400 flex items-center justify-center gap-1.5">
+            <Gift className="w-4 h-4" />
+            <span>15 Días de Prueba 100% Gratis en Todos los Planes</span>
+          </div>
+          <p className="text-[11px] text-slate-300">
+            Prueba todas las funcionalidades sin tarjeta de crédito. Al finalizar los 15 días, continúas con tu suscripción mensual (desde {billingCycle === 'launch' ? '19,50 €' : '39 €'}/mes) o cancelas con 1 solo clic. Sin permanencia ni letra pequeña.
+          </p>
+        </div>
+
+        <div className="mt-4 text-center text-xs text-slate-400 max-w-md mx-auto">
           💡 <strong className="text-emerald-400">Cálculo real:</strong> 39 €/mes a cambio de 200-400 € que ahora pierdes en tiempo y reservas no contestadas a tiempo.
         </div>
       </section>

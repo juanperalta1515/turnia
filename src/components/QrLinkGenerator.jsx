@@ -17,14 +17,13 @@ import { db } from '../../server/db';
 export function QrLinkGenerator({ onOpenSimulator }) {
   const [businesses, setBusinesses] = useState(db.getBusinesses());
   const [selectedBizId, setSelectedBizId] = useState(businesses[0]?.id || 'biz-1');
-  const [twilioNumber, setTwilioNumber] = useState('14155238886'); // Twilio Sandbox por defecto
+  const currentBiz = businesses.find(b => b.id === selectedBizId) || businesses[0];
+  const [businessPhone, setBusinessPhone] = useState(currentBiz.phone || '34600112233');
   const [copiedLink, setCopiedLink] = useState(false);
 
-  const currentBiz = businesses.find(b => b.id === selectedBizId) || businesses[0];
-  
   // Mensaje predeterminado inteligente para que el bot detecte el comercio al instante
   const presetMessage = `Hola, quiero un turno en ${currentBiz.name}`;
-  const whatsappUrl = `https://wa.me/${twilioNumber}?text=${encodeURIComponent(presetMessage)}`;
+  const whatsappUrl = `https://wa.me/${businessPhone}?text=${encodeURIComponent(presetMessage)}`;
 
   // Generador de QR usando la API gratuita de QR Server
   const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(whatsappUrl)}&color=055c4b&bgcolor=ffffff`;
@@ -78,22 +77,22 @@ export function QrLinkGenerator({ onOpenSimulator }) {
               ))}
             </div>
 
-            {/* Número de WhatsApp Central (Twilio) */}
+            {/* Número de WhatsApp del Negocio */}
             <div className="space-y-1.5 pt-2">
               <label className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
                 <Smartphone className="w-3.5 h-3.5 text-emerald-400" />
-                Número Central de WhatsApp (Twilio)
+                Número de WhatsApp de la Barbería / Negocio
               </label>
               <div className="flex gap-2">
                 <input
                   type="text"
-                  value={twilioNumber}
-                  onChange={(e) => setTwilioNumber(e.target.value.replace(/[^0-9]/g, ''))}
-                  placeholder="14155238886"
+                  value={businessPhone}
+                  onChange={(e) => setBusinessPhone(e.target.value.replace(/[^0-9]/g, ''))}
+                  placeholder="34600112233"
                   className="bg-dark-950 border border-dark-800 rounded-xl px-3.5 py-2 text-xs font-mono text-slate-200 focus:outline-none focus:border-emerald-500/50 flex-1"
                 />
-                <span className="text-[11px] text-slate-500 flex items-center px-2 bg-dark-950/60 border border-dark-800 rounded-xl">
-                  Sandbox / Prod
+                <span className="text-[11px] text-emerald-400/90 flex items-center px-2 bg-dark-950/60 border border-dark-800 rounded-xl">
+                  WhatsApp Oficial
                 </span>
               </div>
             </div>
