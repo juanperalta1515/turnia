@@ -3,6 +3,8 @@
 <div align="center">
 
 ![Turnia Banner](https://img.shields.io/badge/TURNIA-SaaS%20WhatsApp%20Platform-059669?style=for-the-badge&logo=whatsapp&logoColor=white)
+![No Twilio](https://img.shields.io/badge/Twilio-REEMPLAZADO%20%28100%25%20NATIVO%29-red?style=for-the-badge)
+![WhatsApp QR](https://img.shields.io/badge/WhatsApp-Conexión%20Directa%20QR-25D366?style=for-the-badge&logo=whatsapp&logoColor=white)
 ![Multi-Tenant](https://img.shields.io/badge/Architecture-Multi--Tenant%20Isolated-7c3aed?style=for-the-badge)
 ![Free Trial](https://img.shields.io/badge/Trial-15%20Días%20Gratis-amber?style=for-the-badge)
 ![Google Calendar](https://img.shields.io/badge/Google%20Calendar-Auto--Sync-4285F4?style=for-the-badge&logo=googlecalendar&logoColor=white)
@@ -14,59 +16,72 @@
 
 ---
 
-## 🌟 Descripción General
+> ### 🚫 IMPORTANTE: YA NO UTILIZAMOS TWILIO
+> **TURNIA ha eliminado al 100% la dependencia de Twilio y proveedores de mensajería de pago.**
+> 
+> - **Sin costes por mensaje:** Se acabaron las tarifas de Twilio por cada mensaje enviado o recibido.
+> - **Sin número central compartido:** Cada local vincula su **propio número de WhatsApp de toda la vida** mediante un simple escaneo de **Código QR**.
+> - **Marca Blanca Total:** El cliente final le escribe directamente a la barbería, taller o clínica habitual; el bot responde de forma invisible en segundo plano con respuestas predeterminadas y agenda en Google Calendar.
 
-**TURNIA** es una solución SaaS integral diseñada para automatizar la atención de clientes y el agendamiento de citas a través de **WhatsApp** sin necesidad de intermediarios costosos como Twilio. 
+---
 
-Los clientes escriben directamente al número de WhatsApp habitual del negocio y el bot inteligente responde en segundos con respuestas predeterminadas, consulta la disponibilidad real, agenda el turno en **Google Calendar** y envía recordatorios automáticos (24h y 2h antes) para reducir las ausencias (*no-shows*) hasta en un 70%.
+## 📊 Comparativa: Modelo Anterior (Twilio) vs Modelo Actual (TURNIA Direct QR)
+
+| Característica | Modelo Anterior (Twilio) ❌ | Modelo Actual de TURNIA (Direct QR) ✅ |
+| :--- | :--- | :--- |
+| **Coste por Mensaje** | Pago por cada SMS/WhatsApp (~0.05$ por mensaje) | **0 € por mensaje (100% gratis e ilimitado)** |
+| **Número de Teléfono** | Número central asignado por Twilio | **El número propio de WhatsApp del negocio** |
+| **Experiencia del Cliente** | El cliente notaba un número genérico/sandbox | **Transparente e invisible (habla con su local de siempre)** |
+| **Configuración** | Crear cuenta en Twilio Console, Webhooks y Sandbox | **Escaneo de Código QR en 10 segundos desde el móvil** |
+| **Recordatorios (24h/2h)** | Cobro extra por plantillas HSM aprobadas | **Envíos automáticos directos sin costes adicionales** |
 
 ---
 
 ## ✨ Funcionalidades Principales
 
 ### 1. 📲 Conexión WhatsApp Directa vía QR (Sin Twilio)
-- **Cero Costes por Mensaje:** Conexión nativa mediante escaneo de código QR (estilo WhatsApp Web) por cada comercio.
-- **Número Propio:** El negocio utiliza su número de WhatsApp de toda la vida. Los clientes nunca se enteran de que un software de terceros gestiona las citas.
-- **Detección Automática de Sesión:** Manejo de reconexiones automáticas e indicadores de estado en tiempo real.
+- **Vinculación en 1 Clic:** El dueño del local abre su panel, escanea el código QR desde WhatsApp (*Dispositivos vinculados*) y el bot queda activo 24/7.
+- **Respuestas Predeterminadas Instantáneas:** Atiende consultas recurrentes (horarios, ubicación, servicios, precios) y guía al cliente en el proceso de reserva.
+- **Detección Automática de Sesión:** Manejo de reconexiones automáticas y alertas en tiempo real.
 
 ### 2. 📅 Sincronización Automática con Google Calendar
-- **Bloqueo Instantáneo:** Cada turno confirmado en WhatsApp crea automáticamente un evento en el Google Calendar del comercio.
-- **Datos Detallados:** Incluye nombre del cliente, número de teléfono, servicio solicitado, precio y profesional asignado.
-- **Guía de Integración Paso a Paso:** Asistente interactivo de 5 minutos para conectar cuentas de Google Calendar.
+- **Bloqueo Instantáneo:** Cada turno confirmado en WhatsApp crea automáticamente el evento en el Google Calendar del comercio.
+- **Detalle Completo:** Incluye nombre del cliente, teléfono, servicio contratado, precio y empleado asignado.
+- **Guía de Integración Paso a Paso:** Asistente interactivo de 5 minutos para conectar cuentas de Google Calendar sin conocimientos técnicos.
 
 ### 3. ⏰ Sistema de Recordatorios Anti-Ausencias (-70% No-Shows)
 - **Recordatorio 24 Horas Antes:** Mensaje automático de confirmación con detalles del turno.
-- **Recordatorio 2 Horas Antes:** Aviso de última hora con opción rápida de confirmación o cancelación.
-- **Liberación de Huecos:** Si un cliente cancela desde el recordatorio, el horario se libera automáticamente en el calendario para otro cliente.
+- **Recordatorio 2 Horas Antes:** Aviso de última hora con botón/comando rápido de confirmación o cancelación.
+- **Liberación Inmediata de Huecos:** Si un cliente cancela, el horario se libera en el calendario para que otro cliente pueda agendarlo.
 
 ### 4. 💈 Multirubro (Barberías, Talleres, Clínicas y Estética)
 - **Barberías & Peluquerías:** Cortes fade, barba, peinados y tintes con selección de barbero.
 - **Talleres Mecánicos & Boxes:** Cambio de aceite, revisión pre-ITV, diagnosis y frenos.
-- **Clínicas Odontológicas:** Limpieza dental, revisión general, blanqueamiento y brackets.
+- **Clínicas Odontológicas:** Limpieza dental, revisión general, blanqueamiento y ortodoncia.
 - **Centros de Estética:** Manicura, tratamientos faciales, depilación láser y masajes.
 
-### 5. ⚙️ Gestor de Horarios, Días Laborables y Precios
+### 5. ⚙️ Gestor de Horarios, Días Laborables y Catálogo de Precios
 - **Días de Atención Personalizables:** Selección de días laborables activos (ej. Lunes a Sábado).
-- **Horario de Apertura y Cierre:** Rango horario continuo o configurable.
+- **Horario de Apertura y Cierre:** Rango de atención continuo o partido.
 - **Frecuencia / Intervalos de Citas:** Bloques de 15, 30, 45 o 60 minutos.
 - **Catálogo de Servicios CRUD:** Alta, edición y eliminación de servicios con precios y duraciones.
 
 ### 6. 🎁 Periodo de Prueba de 15 Días 100% Gratis + Suscripción Mensual
-- **Onboarding sin Fricción:** 15 días completos de prueba sin necesidad de ingresar tarjeta de crédito.
-- **Planes Claros:**
+- **15 Días de Prueba Gratis:** Sin ingresar tarjeta de crédito. Los negocios prueban el sistema sin compromiso.
+- **Precios Claros:**
   - **Plan Esencial:** 19,50 € / mes (50% dto. lanzamiento) / 39 € estándar.
   - **Plan Pro:** 39,50 € / mes (50% dto. lanzamiento) / 79 € estándar.
-- **Pasarela de Activación:** Contador de días restantes en el Dashboard y botón de cobro mensual con 1 clic.
+- **Activación Inmediata:** Contador de días restantes en el Dashboard y activación de suscripción en 1 clic.
 
 ### 7. 🔒 Aislamiento de Datos Multi-Tenant (Seguridad y Privacidad)
-- **Privacidad Total:** Cada cliente accede únicamente a los datos, precios, citas y métricas de **su propio negocio**.
-- **Ocultamiento de Competencia:** Los selectores y listas de otros comercios están completamente bloqueados para usuarios regulares.
+- **Privacidad Absoluta:** Cada cliente accede **únicamente a los datos, precios, citas y métricas de su propio negocio**.
+- **Ocultamiento de Competencia:** Los listados y datos de otros comercios están bloqueados para usuarios estándar.
 - **Métricas Aisladas:** Cada negocio visualiza únicamente sus citas de hoy, facturación y estado de su bot.
 
 ### 8. 👑 Panel Master Control para los Dueños de TURNIA (SuperAdmin)
 - **Vista Global de la Plataforma:**
-  - **MRR (Ingresos Recurrentes Mensuales):** Facturación total en tiempo real.
-  - **Total de Locales Registrados:** Barberías, talleres y clínicas activas.
+  - **MRR (Ingresos Recurrentes Mensuales):** Facturación acumulada en tiempo real.
+  - **Total de Locales Registrados:** Listado completo de barberías, talleres y clínicas.
   - **Control de Pruebas Gratuitas:** Monitoreo de clientes en periodo de 15 días.
   - **Volumen Total de Citas:** Métricas de rendimiento de los bots.
 - **Gestión de Clientes y Bajas:**
@@ -82,7 +97,7 @@ Los clientes escriben directamente al número de WhatsApp habitual del negocio y
 ```text
 turnia/
 ├── server/
-│   ├── index.js                     # Servidor Express, endpoints REST y Webhooks
+│   ├── index.js                     # Servidor Express y endpoints REST
 │   ├── botEngine.js                 # Motor conversacional y lógica de turnos
 │   └── db.js                        # Base de datos multi-tenant, suscripciones y auth
 ├── src/
@@ -90,7 +105,7 @@ turnia/
 │   │   ├── SleekLanding.jsx         # Landing page comercial pública (turnia.es)
 │   │   ├── BusinessAuthModal.jsx    # Modal de Login, Registro y Acceso SuperAdmin
 │   │   ├── SuperAdminManager.jsx    # Panel Master Control exclusivo de la plataforma
-│   │   ├── WhatsAppConnectionQR.jsx # Vinculación de WhatsApp del local vía QR
+│   │   ├── WhatsAppConnectionQR.jsx # Vinculación directa de WhatsApp del local vía QR (Sin Twilio)
 │   │   ├── GoogleCalendarView.jsx   # Guía e integración con Google Calendar
 │   │   ├── ServicesManager.jsx      # Configuración de horarios, días y precios
 │   │   ├── WhatsAppSimulator.jsx    # Simulador interactivo de chat en vivo
@@ -109,7 +124,7 @@ turnia/
 
 ## 🚀 Puesta en Marcha (Instalación Local)
 
-### 1. Clonar el repositorio e instalar dependencias
+### 1. Entrar al proyecto e instalar dependencias
 ```bash
 cd turnia
 npm install
