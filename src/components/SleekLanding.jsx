@@ -20,10 +20,11 @@ import {
   ExternalLink,
   Bot,
   Bell,
-  Star
+  Star,
+  UserPlus
 } from 'lucide-react';
 
-export function SleekLanding({ onOpenSimulator, onOpenDashboard }) {
+export function SleekLanding({ onOpenSimulator, onOpenDashboard, onStartOnboarding }) {
   const [billingCycle, setBillingCycle] = useState('launch'); // 'launch' (50% off) or 'regular'
   const [openFaq, setOpenFaq] = useState(null);
 
@@ -34,11 +35,11 @@ export function SleekLanding({ onOpenSimulator, onOpenDashboard }) {
     },
     {
       q: "¿Tengo que cambiar mi número de WhatsApp?",
-      a: "No. Trabajamos con un número dedicado exclusivo para las reservas de Turnia. Tu número personal se queda exactamente como está."
+      a: "No. El cliente le sigue escribiendo al número de WhatsApp de tu barbería. Nosotros nos encargamos de conectar las respuestas predeterminadas por detrás."
     },
     {
       q: "¿Cómo se conecta con mi Google Calendar?",
-      a: "Nosotros conectamos tu cuenta de Google Calendar durante la configuración de 1 hora. Cada vez que un cliente reserva por WhatsApp, el evento se crea solo en tu calendario con el nombre del cliente, teléfono y servicio."
+      a: "Solo inicias sesión con tu cuenta de Google Calendar en nuestro asistente de 5 minutos. Cada vez que un cliente reserva por WhatsApp, el evento se crea solo en tu calendario con el nombre del cliente, teléfono y servicio."
     },
     {
       q: "¿Y si quiero hablar yo directamente con el cliente?",
@@ -97,11 +98,11 @@ export function SleekLanding({ onOpenSimulator, onOpenDashboard }) {
               Probar Demo
             </button>
             <button
-              onClick={onOpenDashboard}
+              onClick={onStartOnboarding}
               className="px-4 py-1.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-lg shadow-emerald-500/25 transition-all hover:scale-105 flex items-center gap-1.5"
             >
-              <span>Panel de Barbería</span>
-              <ArrowRight className="w-3.5 h-3.5" />
+              <UserPlus className="w-3.5 h-3.5" />
+              <span>Conectar mi Local</span>
             </button>
           </div>
 
@@ -125,26 +126,26 @@ export function SleekLanding({ onOpenSimulator, onOpenDashboard }) {
 
         {/* Hero Subtitle */}
         <p className="text-base sm:text-lg text-slate-400 max-w-2xl mx-auto leading-relaxed font-normal">
-          Contesta a tus clientes en <strong className="text-slate-200">30 segundos</strong>, bloquea las citas automáticamente en tu <strong className="text-slate-200">Google Calendar</strong> y manda recordatorios para que nadie falte.
+          Tus clientes le escriben a tu WhatsApp de siempre. Turnia contesta al instante con respuestas predeterminadas, bloquea el hueco en tu <strong className="text-slate-200">Google Calendar</strong> y manda los recordatorios.
         </p>
 
         {/* Hero CTAs */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 pt-2">
           <button
-            onClick={onOpenSimulator}
+            onClick={onStartOnboarding}
             className="w-full sm:w-auto px-7 py-3.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm shadow-xl shadow-emerald-500/30 transition-all hover:scale-105 flex items-center justify-center gap-2"
           >
-            <MessageSquare className="w-4 h-4" />
-            <span>Probar Conversación en Vivo</span>
+            <Zap className="w-4 h-4" />
+            <span>Configurar mi Barbería en 5 Minutos</span>
           </button>
 
-          <a
-            href="#precios"
+          <button
+            onClick={onOpenSimulator}
             className="w-full sm:w-auto px-7 py-3.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-slate-200 font-semibold text-sm transition-all flex items-center justify-center gap-2"
           >
-            <span>Ver Planes (Desde 19,50 €)</span>
-            <ArrowRight className="w-4 h-4 text-slate-400" />
-          </a>
+            <MessageSquare className="w-4 h-4 text-emerald-400" />
+            <span>Ver Conversación de WhatsApp en Vivo</span>
+          </button>
         </div>
 
         {/* Stats Ticker */}
@@ -479,7 +480,7 @@ export function SleekLanding({ onOpenSimulator, onOpenDashboard }) {
             </div>
 
             <button
-              onClick={onOpenSimulator}
+              onClick={onStartOnboarding}
               className="w-full py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-bold text-slate-200 transition-colors"
             >
               Empezar 15 Días Gratis
@@ -527,7 +528,7 @@ export function SleekLanding({ onOpenSimulator, onOpenDashboard }) {
             </div>
 
             <button
-              onClick={onOpenSimulator}
+              onClick={onStartOnboarding}
               className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-lg shadow-emerald-500/25 transition-all hover:scale-105"
             >
               Empezar 15 Días Gratis
@@ -585,10 +586,10 @@ export function SleekLanding({ onOpenSimulator, onOpenDashboard }) {
           </p>
           <div className="pt-2">
             <button
-              onClick={onOpenSimulator}
+              onClick={onStartOnboarding}
               className="px-8 py-3.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-xl shadow-emerald-500/25 transition-all hover:scale-105"
             >
-              Probar Demo de WhatsApp Ahora
+              Conectar mi Barbería en 5 Minutos
             </button>
           </div>
         </div>

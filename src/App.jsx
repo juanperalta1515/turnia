@@ -18,9 +18,11 @@ import {
   X, 
   Globe, 
   LayoutDashboard,
-  ArrowRight
+  ArrowRight,
+  UserPlus
 } from 'lucide-react';
 import { SleekLanding } from './components/SleekLanding';
+import { OnboardingWizard } from './components/OnboardingWizard';
 import { WhatsAppSimulator } from './components/WhatsAppSimulator';
 import { GoogleCalendarView } from './components/GoogleCalendarView';
 import { RemindersManager } from './components/RemindersManager';
@@ -68,22 +70,28 @@ function App() {
     setRefreshKey(prev => prev + 1);
   };
 
+  const handleFinishOnboarding = (newBiz) => {
+    setRefreshKey(prev => prev + 1);
+    setCurrentMode('dashboard');
+    setActiveTab('simulator');
+  };
+
   const navItems = [
+    { id: 'onboarding', label: 'Alta de Local (Onboarding)', icon: UserPlus, highlight: true },
     { id: 'simulator', label: 'Simulador WhatsApp Bot', icon: Bot, badge: 'Live Chat' },
     { id: 'gcalendar', label: 'Google Calendar Sync', icon: CalendarIcon, badge: 'Auto-Sync' },
     { id: 'reminders', label: 'Recordatorios (24h y 2h)', icon: Bell, badge: '-70% No-Shows' },
     { id: 'calendar', label: 'Agenda de Citas', icon: CalendarCheck },
     { id: 'services', label: 'Servicios & Precios', icon: Scissors },
     { id: 'qr', label: 'Links & Códigos QR', icon: QrCode },
-    { id: 'pitch', label: 'Pitch Deck Oficial', icon: Award, highlight: true },
+    { id: 'pitch', label: 'Pitch Deck Oficial', icon: Award },
     { id: 'twilio', label: 'Conexión Twilio (Webhook)', icon: Key }
   ];
 
-  // Si estamos en modo Landing Page (CoreShift Style)
+  // Modo Landing Page Pública (turnia.es)
   if (currentMode === 'landing') {
     return (
       <div className="relative">
-        {/* Floating Switcher Bar para el Usuario/Dev */}
         <div className="fixed bottom-4 right-4 z-50">
           <button
             onClick={() => setCurrentMode('dashboard')}
@@ -104,12 +112,16 @@ function App() {
             setCurrentMode('dashboard');
             setActiveTab('calendar');
           }}
+          onStartOnboarding={() => {
+            setCurrentMode('dashboard');
+            setActiveTab('onboarding');
+          }}
         />
       </div>
     );
   }
 
-  // Si estamos en modo Dashboard / Panel de Gestión
+  // Modo Dashboard / Panel de Gestión de Barberías
   return (
     <div className="min-h-screen bg-[#07090e] flex flex-col md:flex-row relative">
       
@@ -172,7 +184,7 @@ function App() {
           <div className="bg-dark-950/70 border border-dark-800 rounded-2xl p-3.5 mb-4 relative overflow-hidden shadow-lg">
             <div className="flex items-center gap-1.5 text-[11px] text-emerald-400 font-semibold uppercase tracking-wider mb-1">
               <ShieldCheck className="w-3.5 h-3.5" />
-              <span>Recepcionista Activa</span>
+              <span>Número Central Twilio</span>
             </div>
             <h3 className="font-display font-bold text-sm text-slate-100 mb-0.5">
               Barbería & Estilo King
@@ -199,13 +211,13 @@ function App() {
                     ${isActive 
                       ? 'bg-emerald-600 text-white shadow-md shadow-emerald-500/10' 
                       : item.highlight
-                        ? 'text-amber-300 hover:text-amber-200 bg-amber-500/10 border border-amber-500/20 hover:bg-amber-500/20'
+                        ? 'text-emerald-300 hover:text-emerald-200 bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/20'
                         : 'text-slate-400 hover:text-slate-100 hover:bg-dark-800/60'
                     }
                   `}
                 >
                   <div className="flex items-center gap-2.5 truncate">
-                    <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-white' : item.highlight ? 'text-amber-400' : 'text-slate-400'}`} />
+                    <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-white' : item.highlight ? 'text-emerald-400' : 'text-slate-400'}`} />
                     <span className="truncate">{item.label}</span>
                   </div>
                   {item.badge && (
@@ -277,17 +289,21 @@ function App() {
 
           <div className="glass-panel rounded-2xl p-4 flex flex-col justify-between">
             <div className="flex items-center justify-between text-slate-400 text-xs">
-              <span>Ahorro Tiempo Mensual</span>
-              <Sparkles className="w-4 h-4 text-purple-400" />
+              <span>Locales Conectados</span>
+              <Building2 className="w-4 h-4 text-purple-400" />
             </div>
             <span className="font-display font-black text-2xl text-purple-400 mt-1">
-              10 - 16 h
+              {stats.totalBusinesses}
             </span>
           </div>
         </div>
 
         {/* Renderizado de Vistas del Panel */}
         <div className="flex-1">
+          {activeTab === 'onboarding' && (
+            <OnboardingWizard onFinishOnboarding={handleFinishOnboarding} />
+          )}
+
           {activeTab === 'simulator' && (
             <WhatsAppSimulator onAppointmentBooked={handleAppointmentBooked} />
           )}
